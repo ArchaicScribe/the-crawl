@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- CS8618: EF Core requires parameterless private constructors; null assignment is intentional -->
+    <NoWarn>$(NoWarn);CS8618</NoWarn>
+  </PropertyGroup>
+
+</Project>

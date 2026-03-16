@@ -1,0 +1,29 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.userprefs
+appsettings.Development.json
+
+# NuGet
+*.nupkg
+.nuget/
+
+# EF Core migrations (keep tracked but ignore lock files)
+*.db
+*.db-journal
+
+# Node
+client/node_modules/
+client/dist/
+client/.env
+client/.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore

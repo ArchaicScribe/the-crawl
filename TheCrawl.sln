@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0546A17D-170F-4F20-9239-09AF8A96224D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheCrawl.Domain", "src\TheCrawl.Domain\TheCrawl.Domain.csproj", "{26191DCA-53BA-420D-AB6A-96E9AF20F8D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheCrawl.Application", "src\TheCrawl.Application\TheCrawl.Application.csproj", "{A5B42F23-87DD-41B7-890C-B38E49DBB003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheCrawl.Infrastructure", "src\TheCrawl.Infrastructure\TheCrawl.Infrastructure.csproj", "{FEDFDAE2-D6E6-4B4F-AFFE-42CF8A46B34F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheCrawl.API", "src\TheCrawl.API\TheCrawl.API.csproj", "{E15AD3F9-8F22-4154-9CB1-2638FCC33F32}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{5C724FE5-BB20-4381-B17F-4E9B07015702}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheCrawl.Domain.Tests", "tests\TheCrawl.Domain.Tests\TheCrawl.Domain.Tests.csproj", "{68C86A82-3C1C-4F3D-88B2-138F143B97B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheCrawl.Application.Tests", "tests\TheCrawl.Application.Tests\TheCrawl.Application.Tests.csproj", "{053484E4-A5E7-459F-B7E3-0599974A26B5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{26191DCA-53BA-420D-AB6A-96E9AF20F8D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26191DCA-53BA-420D-AB6A-96E9AF20F8D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26191DCA-53BA-420D-AB6A-96E9AF20F8D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26191DCA-53BA-420D-AB6A-96E9AF20F8D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5B42F23-87DD-41B7-890C-B38E49DBB003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5B42F23-87DD-41B7-890C-B38E49DBB003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5B42F23-87DD-41B7-890C-B38E49DBB003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5B42F23-87DD-41B7-890C-B38E49DBB003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEDFDAE2-D6E6-4B4F-AFFE-42CF8A46B34F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEDFDAE2-D6E6-4B4F-AFFE-42CF8A46B34F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEDFDAE2-D6E6-4B4F-AFFE-42CF8A46B34F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEDFDAE2-D6E6-4B4F-AFFE-42CF8A46B34F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E15AD3F9-8F22-4154-9CB1-2638FCC33F32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E15AD3F9-8F22-4154-9CB1-2638FCC33F32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E15AD3F9-8F22-4154-9CB1-2638FCC33F32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E15AD3F9-8F22-4154-9CB1-2638FCC33F32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68C86A82-3C1C-4F3D-88B2-138F143B97B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68C86A82-3C1C-4F3D-88B2-138F143B97B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68C86A82-3C1C-4F3D-88B2-138F143B97B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68C86A82-3C1C-4F3D-88B2-138F143B97B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{053484E4-A5E7-459F-B7E3-0599974A26B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{053484E4-A5E7-459F-B7E3-0599974A26B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{053484E4-A5E7-459F-B7E3-0599974A26B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{053484E4-A5E7-459F-B7E3-0599974A26B5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{26191DCA-53BA-420D-AB6A-96E9AF20F8D4} = {0546A17D-170F-4F20-9239-09AF8A96224D}
+		{A5B42F23-87DD-41B7-890C-B38E49DBB003} = {0546A17D-170F-4F20-9239-09AF8A96224D}
+		{FEDFDAE2-D6E6-4B4F-AFFE-42CF8A46B34F} = {0546A17D-170F-4F20-9239-09AF8A96224D}
+		{E15AD3F9-8F22-4154-9CB1-2638FCC33F32} = {0546A17D-170F-4F20-9239-09AF8A96224D}
+		{68C86A82-3C1C-4F3D-88B2-138F143B97B8} = {5C724FE5-BB20-4381-B17F-4E9B07015702}
+		{053484E4-A5E7-459F-B7E3-0599974A26B5} = {5C724FE5-BB20-4381-B17F-4E9B07015702}
+	EndGlobalSection
+EndGlobal
