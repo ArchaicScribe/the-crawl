@@ -13,6 +13,7 @@ public class GameDbContext(DbContextOptions<GameDbContext> options) : DbContext(
         modelBuilder.Entity<Player>(b =>
         {
             b.HasKey(p => p.Id);
+            b.Property(p => p.Class).HasConversion<string>();
             b.OwnsOne(p => p.BaseStats);
             b.OwnsOne(p => p.Position);
         });
@@ -22,10 +23,8 @@ public class GameDbContext(DbContextOptions<GameDbContext> options) : DbContext(
             b.HasKey(s => s.Id);
             b.HasOne(s => s.Player).WithMany().HasForeignKey("PlayerId");
             b.Property(s => s.Status).HasConversion<string>();
-            b.Property(s => s.EventLog)
-                .HasConversion(
-                    v => string.Join('\n', v),
-                    v => v.Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList());
+            b.Ignore(s => s.CurrentFloor); // Floor is complex; lives in memory only during active sessions
+            b.Ignore(s => s.EventLog);    // In-memory audit trail; persisted separately as SessionEvent if needed later
         });
     }
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using TheCrawl.Domain.Enums;
 
 namespace TheCrawl.Domain.Entities;
@@ -6,11 +7,11 @@ public class GameSession
 {
     public Guid Id { get; private set; }
     public Player Player { get; private set; }
-    public Floor CurrentFloor { get; private set; }
+    [NotMapped] public Floor CurrentFloor { get; private set; }
     public GameStatus Status { get; private set; }
     public DateTime StartedAt { get; private set; }
     public DateTime? EndedAt { get; private set; }
-    public List<string> EventLog { get; private set; } = [];
+    [NotMapped] public List<string> EventLog { get; private set; } = [];
 
     private GameSession() { }
 

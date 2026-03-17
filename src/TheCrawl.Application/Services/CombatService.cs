@@ -1,13 +1,10 @@
 using TheCrawl.Application.Commands;
 using TheCrawl.Application.Interfaces;
 using TheCrawl.Domain.Entities;
-using TheCrawl.Domain.Interfaces;
 
 namespace TheCrawl.Application.Services;
 
-public class CombatService(
-    IGameSessionRepository sessionRepository,
-    IAnnouncerService announcer)
+public class CombatService(IAnnouncerService announcer)
 {
     private readonly Random _rng = new();
 

@@ -20,8 +20,8 @@ builder.Services.AddDbContext<GameDbContext>(options =>
 builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
 builder.Services.AddSingleton<IDungeonGenerator, DungeonGenerator>();
 builder.Services.AddSingleton<IAnnouncerService, AnnouncerService>();
-builder.Services.AddSingleton<GameService>();
-builder.Services.AddSingleton<CombatService>();
+builder.Services.AddScoped<GameService>();
+builder.Services.AddScoped<CombatService>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
