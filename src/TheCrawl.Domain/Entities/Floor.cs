@@ -46,4 +46,21 @@ public class Floor
 
     public Item? ItemAt(Position pos) =>
         Items.FirstOrDefault(i => i.Position == pos);
+
+    public static Floor Restore(
+        Guid id, int floorNumber, ZoneType zone, int width, int height,
+        TileType[,] tiles, List<Room> rooms, List<Enemy> enemies,
+        List<Item> items, Position stairsPosition) => new()
+    {
+        Id = id,
+        FloorNumber = floorNumber,
+        Zone = zone,
+        Width = width,
+        Height = height,
+        Tiles = tiles,
+        Rooms = rooms,
+        Enemies = enemies,
+        Items = items,
+        StairsPosition = stairsPosition
+    };
 }

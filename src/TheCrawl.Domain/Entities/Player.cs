@@ -55,4 +55,19 @@ public class Player
 
     public long BroadcastScore =>
         (long)BaseStats.Ratings * FloorsCleared * Math.Max(1, KillCount);
+
+    public static Player Restore(
+        Guid id, string name, PlayerClass playerClass, Stats stats,
+        int currentHp, int level, int killCount, int floorsCleared, Position position) => new()
+    {
+        Id = id,
+        Name = name,
+        Class = playerClass,
+        BaseStats = stats,
+        CurrentHp = currentHp,
+        Level = level,
+        KillCount = killCount,
+        FloorsCleared = floorsCleared,
+        Position = position
+    };
 }

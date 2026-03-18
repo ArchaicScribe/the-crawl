@@ -17,7 +17,11 @@ builder.Services.AddSignalR();
 builder.Services.AddDbContext<GameDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
 
+builder.Services.AddStackExchangeRedisCache(options =>
+    options.Configuration = builder.Configuration.GetConnectionString("Redis"));
+
 builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
+builder.Services.AddScoped<ISessionStore, RedisSessionStore>();
 builder.Services.AddSingleton<IDungeonGenerator, DungeonGenerator>();
 builder.Services.AddSingleton<IAnnouncerService, AnnouncerService>();
 builder.Services.AddScoped<GameService>();

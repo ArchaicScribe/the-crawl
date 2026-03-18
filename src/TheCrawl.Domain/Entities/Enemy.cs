@@ -38,4 +38,20 @@ public class Enemy
     }
 
     public void MoveTo(Position position) => Position = position;
+
+    public static Enemy Restore(
+        Guid id, string name, string flavorTitle,
+        int maxHp, int currentHp, int damage,
+        int dodgeChance, int ratingsOnKill, Position position) => new()
+    {
+        Id = id,
+        Name = name,
+        FlavorTitle = flavorTitle,
+        MaxHp = maxHp,
+        CurrentHp = currentHp,
+        Damage = damage,
+        DodgeChance = dodgeChance,
+        RatingsOnKill = ratingsOnKill,
+        Position = position
+    };
 }

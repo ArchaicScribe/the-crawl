@@ -45,4 +45,17 @@ public class GameSession
     }
 
     public bool IsActive => Status == GameStatus.Active;
+
+    public static GameSession Restore(
+        Guid id, Player player, Floor floor, GameStatus status,
+        DateTime startedAt, DateTime? endedAt, List<string> eventLog) => new()
+    {
+        Id = id,
+        Player = player,
+        CurrentFloor = floor,
+        Status = status,
+        StartedAt = startedAt,
+        EndedAt = endedAt,
+        EventLog = eventLog
+    };
 }
