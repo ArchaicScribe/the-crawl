@@ -1,0 +1,52 @@
+name: Enforce branch naming convention
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - qa
+      - staging
+      - main
+
+jobs:
+  check-branch-name:
+    name: Validate branch name
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          VALID_PATTERN="^(feature|fix|hotfix|chore|docs|test|refactor|ci)/.+"
+          PROTECTED="^(main|develop|qa|staging)$"
+
+          if echo "$BRANCH" | grep -qE "$PROTECTED"; then
+            echo "✓ Protected branch '$BRANCH' — skipping name check."
+            exit 0
+          fi
+
+          if echo "$BRANCH" | grep -qE "$VALID_PATTERN"; then
+            echo "✓ Branch name '$BRANCH' is valid."
+          else
+            echo ""
+            echo "✗ Branch name '$BRANCH' does not follow naming conventions."
+            echo ""
+            echo "  Required format: <prefix>/<description>"
+            echo ""
+            echo "  Allowed prefixes:"
+            echo "    feature/  — new functionality"
+            echo "    fix/      — bug fixes on develop"
+            echo "    hotfix/   — urgent fixes branched from staging or main"
+            echo "    chore/    — maintenance, dependencies, config"
+            echo "    docs/     — documentation only"
+            echo "    test/     — test additions or corrections"
+            echo "    refactor/ — code restructuring, no behavior change"
+            echo "    ci/       — CI/CD pipeline changes"
+            echo ""
+            echo "  Examples:"
+            echo "    feature/fov-calculation"
+            echo "    fix/combat-dodge-rollover"
+            echo "    hotfix/session-memory-leak"
+            echo "    chore/update-efcore-packages"
+            exit 1
+          fi
