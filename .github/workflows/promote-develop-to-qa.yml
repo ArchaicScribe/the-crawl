@@ -1,0 +1,32 @@
+name: Promote develop → qa
+
+on:
+  push:
+    branches:
+      - develop
+  schedule:
+    # Runs daily at 02:00 UTC as a safety net sync
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  promote:
+    name: Fast-forward qa to develop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Promote develop to qa
+        run: |
+          git checkout qa
+          git merge --ff-only origin/develop
+          git push origin qa
