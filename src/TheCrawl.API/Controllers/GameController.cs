@@ -25,9 +25,9 @@ public class GameController(GameService gameService) : ControllerBase
     }
 
     [HttpGet("session/{sessionId:guid}")]
-    public IActionResult GetSession(Guid sessionId)
+    public async Task<IActionResult> GetSession(Guid sessionId, CancellationToken ct)
     {
-        var session = gameService.GetSession(sessionId);
+        var session = await gameService.GetSessionAsync(sessionId, ct);
         if (session is null) return NotFound();
 
         return Ok(new

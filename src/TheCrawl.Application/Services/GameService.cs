@@ -10,10 +10,9 @@ namespace TheCrawl.Application.Services;
 public class GameService(
     IDungeonGenerator dungeonGenerator,
     IGameSessionRepository sessionRepository,
+    ISessionStore sessionStore,
     IAnnouncerService announcer)
 {
-    private static readonly Dictionary<Guid, GameSession> _activeSessions = new();
-
     public async Task<StartGameResult> StartGameAsync(StartGameCommand command, CancellationToken ct = default)
     {
         var stats = ClassDefinitions.GetBaseStats(command.PlayerClass);
@@ -22,16 +21,17 @@ public class GameService(
         var player = new Player(command.PlayerName, command.PlayerClass, stats, startPos);
         var session = new GameSession(player, floor);
 
-        _activeSessions[session.Id] = session;
+        await sessionStore.SaveAsync(session, ct);
         await sessionRepository.SaveAsync(session, ct);
 
-        var message = announcer.OnSessionStart(command.PlayerName, command.PlayerClass.ToString());
+        var message = await announcer.OnSessionStartAsync(command.PlayerName, command.PlayerClass.ToString(), ct);
         return new StartGameResult(session.Id, message);
     }
 
     public async Task<MoveResult> MoveAsync(MoveCommand command, CancellationToken ct = default)
     {
-        if (!_activeSessions.TryGetValue(command.SessionId, out var session) || !session.IsActive)
+        var session = await sessionStore.GetAsync(command.SessionId, ct);
+        if (session is null || !session.IsActive)
             return new MoveResult(false, "Session not found or already ended.");
 
         var player = session.Player;
@@ -71,13 +71,13 @@ public class GameService(
             };
             var nextFloor = dungeonGenerator.GenerateFloor(nextFloorNumber, nextZone);
             session.DescendToFloor(nextFloor);
-            announcerMessage = announcer.OnFloorDescend(player.Name, nextFloorNumber);
+            announcerMessage = await announcer.OnFloorDescendAsync(player.Name, nextFloorNumber, ct);
         }
 
-        await sessionRepository.SaveAsync(session, ct);
+        await sessionStore.SaveAsync(session, ct);
         return new MoveResult(true, $"Moved to ({target.X},{target.Y}).", announcerMessage);
     }
 
-    public GameSession? GetSession(Guid sessionId) =>
-        _activeSessions.TryGetValue(sessionId, out var session) ? session : null;
+    public async Task<GameSession?> GetSessionAsync(Guid sessionId, CancellationToken ct = default) =>
+        await sessionStore.GetAsync(sessionId, ct);
 }

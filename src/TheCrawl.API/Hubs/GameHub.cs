@@ -28,10 +28,10 @@ public class GameHub(GameService gameService, CombatService combatService) : Hub
     {
         if (!Guid.TryParse(sessionId, out var id)) return;
 
-        var session = gameService.GetSession(id);
+        var session = await gameService.GetSessionAsync(id);
         if (session is null) return;
 
-        var result = combatService.ResolvePlayerAttack(session);
+        var result = await combatService.ResolvePlayerAttackAsync(session);
         await Clients.Group(sessionId).SendAsync("CombatResult", result);
 
         if (result.AnnouncerMessage is not null)
