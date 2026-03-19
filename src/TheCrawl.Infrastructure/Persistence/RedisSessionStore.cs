@@ -99,7 +99,9 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
         List<RoomSnapshot> Rooms,
         List<EnemySnapshot> Enemies,
         List<ItemSnapshot> Items,
-        int StairsX, int StairsY)
+        int StairsX, int StairsY,
+        List<int[]> VisibleTiles,
+        List<int[]> ExploredTiles)
     {
         public static FloorSnapshot From(Floor f) => new(
             f.Id, f.FloorNumber, f.Zone,
@@ -108,17 +110,22 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
             f.Rooms.Select(RoomSnapshot.From).ToList(),
             f.Enemies.Select(EnemySnapshot.From).ToList(),
             f.Items.Select(ItemSnapshot.From).ToList(),
-            f.StairsPosition.X, f.StairsPosition.Y);
+            f.StairsPosition.X, f.StairsPosition.Y,
+            f.VisibleTiles.Select(p  => new[] { p.X, p.Y }).ToList(),
+            f.ExploredTiles.Select(p => new[] { p.X, p.Y }).ToList());
 
         public Floor ToDomain()
         {
-            var tiles = Unflatten(Tiles, Width, Height);
+            var tiles    = Unflatten(Tiles, Width, Height);
+            var visible  = VisibleTiles.Select(p  => new Position(p[0], p[1])).ToHashSet();
+            var explored = ExploredTiles.Select(p => new Position(p[0], p[1])).ToHashSet();
             return Floor.Restore(
                 Id, FloorNumber, Zone, Width, Height, tiles,
                 Rooms.Select(r => r.ToDomain()).ToList(),
                 Enemies.Select(e => e.ToDomain()).ToList(),
                 Items.Select(i => i.ToDomain()).ToList(),
-                new Position(StairsX, StairsY));
+                new Position(StairsX, StairsY),
+                visible, explored);
         }
 
         private static int[] Flatten(TileType[,] tiles, int w, int h)

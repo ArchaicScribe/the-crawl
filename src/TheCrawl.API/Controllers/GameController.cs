@@ -54,6 +54,12 @@ public class GameController(GameService gameService) : ControllerBase
                 session.CurrentFloor.Height,
                 session.CurrentFloor.StairsPosition,
                 EnemiesAlive = session.CurrentFloor.Enemies.Count(e => e.IsAlive),
+                // Only expose enemies the player can currently see
+                VisibleEnemies = session.CurrentFloor.Enemies
+                    .Where(e => e.IsAlive && session.CurrentFloor.IsVisible(e.Position))
+                    .Select(e => new { e.Name, e.FlavorTitle, e.CurrentHp, e.MaxHp, Position = e.Position }),
+                VisibleTiles   = session.CurrentFloor.VisibleTiles,
+                ExploredTiles  = session.CurrentFloor.ExploredTiles,
             },
             EventLog = session.EventLog.TakeLast(20),
         });

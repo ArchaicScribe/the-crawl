@@ -11,8 +11,12 @@ public class GameService(
     IDungeonGenerator dungeonGenerator,
     IGameSessionRepository sessionRepository,
     ISessionStore sessionStore,
-    IAnnouncerService announcer)
+    IAnnouncerService announcer,
+    IFovCalculator fov)
 {
+    // Sight radius in tiles. Could become a per-class stat or item modifier later.
+    private const int SightRadius = 8;
+
     public async Task<StartGameResult> StartGameAsync(StartGameCommand command, CancellationToken ct = default)
     {
         var stats = ClassDefinitions.GetBaseStats(command.PlayerClass);
@@ -20,6 +24,9 @@ public class GameService(
         var startPos = floor.Rooms.First().Center;
         var player = new Player(command.PlayerName, command.PlayerClass, stats, startPos);
         var session = new GameSession(player, floor);
+
+        // Compute initial FOV from the starting position
+        floor.UpdateVisibility(fov.Calculate(startPos, SightRadius, floor));
 
         await sessionStore.SaveAsync(session, ct);
         await sessionRepository.SaveAsync(session, ct);
@@ -57,6 +64,9 @@ public class GameService(
 
         player.MoveTo(target);
 
+        // Recompute FOV — replaces VisibleTiles, accumulates ExploredTiles
+        floor.UpdateVisibility(fov.Calculate(target, SightRadius, floor));
+
         string? announcerMessage = null;
 
         if (target == floor.StairsPosition)
@@ -71,6 +81,8 @@ public class GameService(
             };
             var nextFloor = dungeonGenerator.GenerateFloor(nextFloorNumber, nextZone);
             session.DescendToFloor(nextFloor);
+            // FOV from spawn position on the new floor
+            nextFloor.UpdateVisibility(fov.Calculate(player.Position, SightRadius, nextFloor));
             announcerMessage = await announcer.OnFloorDescendAsync(player.Name, nextFloorNumber, ct);
         }
 
