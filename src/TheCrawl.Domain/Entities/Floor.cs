@@ -17,6 +17,12 @@ public class Floor
     public Position StairsPosition { get; private set; }
     public bool IsCleared => !Enemies.Any(e => e.IsAlive);
 
+    /// <summary>Tiles the player can see right now. Recalculated every turn.</summary>
+    public HashSet<Position> VisibleTiles { get; private set; } = [];
+
+    /// <summary>Tiles the player has seen at any point. Accumulates over the run.</summary>
+    public HashSet<Position> ExploredTiles { get; private set; } = [];
+
     private Floor() { }
 
     public Floor(int floorNumber, ZoneType zone, int width, int height, TileType[,] tiles,
@@ -47,10 +53,26 @@ public class Floor
     public Item? ItemAt(Position pos) =>
         Items.FirstOrDefault(i => i.Position == pos);
 
+    /// <summary>
+    /// Replaces the current visible set and merges it into explored.
+    /// Called after every player move.
+    /// </summary>
+    public void UpdateVisibility(HashSet<Position> visibleTiles)
+    {
+        VisibleTiles = visibleTiles;
+        foreach (var pos in visibleTiles)
+            ExploredTiles.Add(pos);
+    }
+
+    public bool IsVisible(Position pos)  => VisibleTiles.Contains(pos);
+    public bool IsExplored(Position pos) => ExploredTiles.Contains(pos);
+
     public static Floor Restore(
         Guid id, int floorNumber, ZoneType zone, int width, int height,
         TileType[,] tiles, List<Room> rooms, List<Enemy> enemies,
-        List<Item> items, Position stairsPosition) => new()
+        List<Item> items, Position stairsPosition,
+        HashSet<Position>? visibleTiles = null,
+        HashSet<Position>? exploredTiles = null) => new()
     {
         Id = id,
         FloorNumber = floorNumber,
@@ -61,6 +83,8 @@ public class Floor
         Rooms = rooms,
         Enemies = enemies,
         Items = items,
-        StairsPosition = stairsPosition
+        StairsPosition = stairsPosition,
+        VisibleTiles  = visibleTiles  ?? [],
+        ExploredTiles = exploredTiles ?? []
     };
 }
