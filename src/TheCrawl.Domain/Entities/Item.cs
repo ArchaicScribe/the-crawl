@@ -25,6 +25,8 @@ public class Item
         Position = position;
     }
 
+    public void MoveTo(Position position) => Position = position;
+
     public static Item Restore(
         Guid id, string name, string description,
         ItemType type, int effectValue, Position position) => new()

@@ -79,7 +79,9 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
         int X, int Y,
         int BackpackCapacity,
         WeaponSnapshot? EquippedWeapon,
-        WeaponSnapshot? EquippedOffhand)
+        WeaponSnapshot? EquippedOffhand,
+        List<ItemSnapshot> BackpackItems,
+        List<WeaponSnapshot> BackpackWeapons)
     {
         public static PlayerSnapshot From(Player p) => new(
             p.Id, p.Name, p.Class,
@@ -89,7 +91,9 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
             p.Position.X, p.Position.Y,
             p.BackpackCapacity,
             p.EquippedWeapon  is not null ? WeaponSnapshot.From(p.EquippedWeapon)  : null,
-            p.EquippedOffhand is not null ? WeaponSnapshot.From(p.EquippedOffhand) : null);
+            p.EquippedOffhand is not null ? WeaponSnapshot.From(p.EquippedOffhand) : null,
+            p.BackpackItems.Select(ItemSnapshot.From).ToList(),
+            p.BackpackWeapons.Select(WeaponSnapshot.From).ToList());
 
         public Player ToDomain() => Player.Restore(
             Id, Name, Class,
@@ -98,7 +102,9 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
             new Position(X, Y),
             BackpackCapacity,
             EquippedWeapon?.ToDomain(),
-            EquippedOffhand?.ToDomain());
+            EquippedOffhand?.ToDomain(),
+            BackpackItems.Select(i => i.ToDomain()).ToList(),
+            BackpackWeapons.Select(w => w.ToDomain()).ToList());
     }
 
     private record WeaponSnapshot(

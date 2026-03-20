@@ -59,8 +59,11 @@ public class Floor
     public Weapon? WeaponAt(Position pos) =>
         Weapons.FirstOrDefault(w => w.Position == pos);
 
-    public void RemoveWeapon(Weapon weapon) =>
-        Weapons.Remove(weapon);
+    public void RemoveWeapon(Weapon weapon) => Weapons.Remove(weapon);
+    public void AddWeapon(Weapon weapon)    => Weapons.Add(weapon);
+
+    public void RemoveItem(Item item) => Items.Remove(item);
+    public void AddItem(Item item)    => Items.Add(item);
 
     /// <summary>
     /// Replaces the current visible set and merges it into explored.

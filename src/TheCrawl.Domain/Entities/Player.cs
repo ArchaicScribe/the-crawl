@@ -22,30 +22,40 @@ public class Player
     // -------------------------------------------------------------------------
     // Equipment slots
     // -------------------------------------------------------------------------
-    public Weapon? EquippedWeapon   { get; private set; }
-    public Weapon? EquippedOffhand  { get; private set; }
+    public Weapon? EquippedWeapon  { get; private set; }
+    public Weapon? EquippedOffhand { get; private set; }
 
-    // Armor slots
-    public Weapon? SlotHead         { get; private set; }
-    public Weapon? SlotFace         { get; private set; }
-    public Weapon? SlotNeck         { get; private set; }
-    public Weapon? SlotChest        { get; private set; }
-    public Weapon? SlotArms         { get; private set; }
-    public Weapon? SlotBracers      { get; private set; }
-    public Weapon? SlotGloves       { get; private set; }
-    public Weapon? SlotBelt         { get; private set; }
-    public Weapon? SlotLegs         { get; private set; }
-    public Weapon? SlotBoots        { get; private set; }
+    // Armor slots — typed as Weapon for now; armor items will share the entity
+    public Weapon? SlotHead        { get; private set; }
+    public Weapon? SlotFace        { get; private set; }
+    public Weapon? SlotNeck        { get; private set; }
+    public Weapon? SlotChest       { get; private set; }
+    public Weapon? SlotArms        { get; private set; }
+    public Weapon? SlotBracers     { get; private set; }
+    public Weapon? SlotGloves      { get; private set; }
+    public Weapon? SlotBelt        { get; private set; }
+    public Weapon? SlotLegs        { get; private set; }
+    public Weapon? SlotBoots       { get; private set; }
 
-    // Jewelry / accessory
-    public Weapon? SlotRing1        { get; private set; }
-    public Weapon? SlotRing2        { get; private set; }
-    public Weapon? SlotAccessory    { get; private set; }
+    // Jewelry / accessory — base slots; Influencer gets extras
+    public Weapon? SlotRing1       { get; private set; }
+    public Weapon? SlotRing2       { get; private set; }
+    public Weapon? SlotAccessory   { get; private set; }
 
-    // Backpack — capacity expands via sponsorship tiers
-    public List<Item> Backpack      { get; private set; } = [];
-    public int BackpackCapacity     { get; private set; } = BaseBackpackCapacity;
-    public bool BackpackFull        => Backpack.Count >= BackpackCapacity;
+    // Influencer-only bonus jewelry slots
+    public Weapon? SlotRing3       { get; private set; }
+    public Weapon? SlotEarring     { get; private set; }
+    public Weapon? SlotAnklet      { get; private set; }
+    public Weapon? SlotWristband   { get; private set; }
+
+    // -------------------------------------------------------------------------
+    // Backpack — separate lists; unified capacity keeps slot count clean
+    // -------------------------------------------------------------------------
+    public List<Item>   BackpackItems   { get; private set; } = [];
+    public List<Weapon> BackpackWeapons { get; private set; } = [];
+    public int BackpackCapacity         { get; private set; } = BaseBackpackCapacity;
+    public int BackpackUsed             => BackpackItems.Count + BackpackWeapons.Count;
+    public bool BackpackFull            => BackpackUsed >= BackpackCapacity;
 
     private Player() { } // EF Core
 
@@ -60,6 +70,10 @@ public class Player
         Position = startPosition;
     }
 
+    // -------------------------------------------------------------------------
+    // Movement / stats
+    // -------------------------------------------------------------------------
+
     public void MoveTo(Position position) => Position = position;
 
     public int TakeDamage(int amount)
@@ -73,8 +87,7 @@ public class Player
         CurrentHp = Math.Min(MaxHp, CurrentHp + amount);
 
     public void RegisterKill() => KillCount++;
-
-    public void ClearFloor() => FloorsCleared++;
+    public void ClearFloor()   => FloorsCleared++;
 
     public void LevelUp(Stats bonus)
     {
@@ -83,45 +96,27 @@ public class Player
         CurrentHp = Math.Min(CurrentHp, MaxHp);
     }
 
-    public void ExpandBackpack(int slots) =>
-        BackpackCapacity += slots;
+    public void ExpandBackpack(int slots) => BackpackCapacity += slots;
 
     // -------------------------------------------------------------------------
-    // Weapon equip / unequip
+    // Class-specific slot availability
     // -------------------------------------------------------------------------
 
-    /// <summary>
-    /// Equips a weapon to the main hand. Identifies it on equip.
-    /// Returns the previously equipped weapon (if any) for the caller to handle.
-    /// </summary>
-    public Weapon? EquipWeapon(Weapon weapon)
-    {
-        weapon.Identify();
-        var previous = EquippedWeapon;
-        EquippedWeapon = weapon;
-        return previous;
-    }
+    /// <summary>Influencers get 3 ring slots; all other classes get 2.</summary>
+    public int RingSlotCount => Class == PlayerClass.Influencer ? 3 : 2;
 
-    /// <summary>
-    /// Equips a weapon to the offhand. Only valid for dual-wield classes.
-    /// Returns the previously equipped offhand (if any).
-    /// </summary>
-    public Weapon? EquipOffhand(Weapon weapon)
-    {
-        weapon.Identify();
-        var previous = EquippedOffhand;
-        EquippedOffhand = weapon;
-        return previous;
-    }
+    /// <summary>Bonus jewelry slots are Influencer-exclusive.</summary>
+    public bool HasBonusJewelrySlots => Class == PlayerClass.Influencer;
+
+    // -------------------------------------------------------------------------
+    // Equip checks
+    // -------------------------------------------------------------------------
 
     public bool CanDualWield => Class is PlayerClass.Exterminator or PlayerClass.Veteran;
 
     /// <summary>
-    /// Returns null if the weapon can be equipped, or an error message if not.
-    /// Enforces weight class level gates:
-    ///   Veteran:      Medium+Medium at 5, any Heavy at 10
-    ///   Exterminator: any Heavy at 8
-    ///   Others:       no Heavy weapons at all
+    /// Returns null if the weapon can be equipped, or a reason string if not.
+    /// Enforces weight class level gates per class.
     /// </summary>
     public string? CanEquip(Weapon weapon, bool offhand = false)
     {
@@ -142,21 +137,91 @@ public class Player
             && Class == PlayerClass.Veteran && Level < 5)
             return $"Veterans can dual wield Medium weapons at level 5. You are level {Level}.";
 
-        return null;
+        return null; // clear to equip
     }
 
     // -------------------------------------------------------------------------
-    // Combat helpers
+    // Equip / unequip
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// Base weapon damage for this turn. Falls back to fists (MUSCLE-based) if unarmed.
-    /// Degrades the equipped weapon on use.
+    /// Equips weapon to main hand. Identifies on equip (risk of curse reveal).
+    /// Returns the displaced weapon so the caller can push it to backpack or floor.
+    /// </summary>
+    public Weapon? EquipWeapon(Weapon weapon)
+    {
+        weapon.Identify();
+        var displaced = EquippedWeapon;
+        EquippedWeapon = weapon;
+        return displaced;
+    }
+
+    /// <summary>
+    /// Equips weapon to offhand. Caller must verify CanEquip(weapon, offhand: true) first.
+    /// </summary>
+    public Weapon? EquipOffhand(Weapon weapon)
+    {
+        weapon.Identify();
+        var displaced = EquippedOffhand;
+        EquippedOffhand = weapon;
+        return displaced;
+    }
+
+    public void UnequipWeapon()  => EquippedWeapon  = null;
+    public void UnequipOffhand() => EquippedOffhand = null;
+
+    // -------------------------------------------------------------------------
+    // Backpack operations
+    // -------------------------------------------------------------------------
+
+    public bool AddToBackpack(Weapon weapon)
+    {
+        if (BackpackFull) return false;
+        BackpackWeapons.Add(weapon);
+        return true;
+    }
+
+    public bool AddToBackpack(Item item)
+    {
+        if (BackpackFull) return false;
+        BackpackItems.Add(item);
+        return true;
+    }
+
+    public bool RemoveFromBackpack(Guid weaponId)
+    {
+        var weapon = BackpackWeapons.FirstOrDefault(w => w.Id == weaponId);
+        if (weapon is null) return false;
+        BackpackWeapons.Remove(weapon);
+        return true;
+    }
+
+    public bool RemoveFromBackpack(Guid itemId, out Item? item)
+    {
+        item = BackpackItems.FirstOrDefault(i => i.Id == itemId);
+        if (item is null) return false;
+        BackpackItems.Remove(item);
+        return true;
+    }
+
+    public Weapon? FindBackpackWeapon(Guid weaponId) =>
+        BackpackWeapons.FirstOrDefault(w => w.Id == weaponId);
+
+    public Item? FindBackpackItem(Guid itemId) =>
+        BackpackItems.FirstOrDefault(i => i.Id == itemId);
+
+    // -------------------------------------------------------------------------
+    // Combat
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Rolls damage for this turn. Degrades equipped weapon on use.
+    /// Falls back to fists when unarmed or broken.
     /// </summary>
     public int RollWeaponDamage(Random rng)
     {
         if (EquippedWeapon is null || EquippedWeapon.IsBroken)
-            return Math.Max(1, BaseStats.Muscle + rng.Next(-1, 2)); // fists
+            return Math.Max(1, BaseStats.Muscle + rng.Next(-1, 2));
 
         var damage = EquippedWeapon.RollDamage(rng) + BaseStats.Muscle;
         EquippedWeapon.Degrade();
@@ -166,25 +231,32 @@ public class Player
     public long BroadcastScore =>
         (long)BaseStats.Ratings * FloorsCleared * Math.Max(1, KillCount);
 
+    // -------------------------------------------------------------------------
+    // Restore
+    // -------------------------------------------------------------------------
+
     public static Player Restore(
         Guid id, string name, PlayerClass playerClass, Stats stats,
         int currentHp, int level, int killCount, int floorsCleared, Position position,
         int backpackCapacity = BaseBackpackCapacity,
-        Weapon? equippedWeapon = null, Weapon? equippedOffhand = null,
-        List<Item>? backpack = null) => new()
+        Weapon? equippedWeapon  = null,
+        Weapon? equippedOffhand = null,
+        List<Item>?   backpackItems   = null,
+        List<Weapon>? backpackWeapons = null) => new()
     {
-        Id = id,
-        Name = name,
-        Class = playerClass,
-        BaseStats = stats,
-        CurrentHp = currentHp,
-        Level = level,
-        KillCount = killCount,
-        FloorsCleared = floorsCleared,
-        Position = position,
-        BackpackCapacity = backpackCapacity,
-        EquippedWeapon = equippedWeapon,
-        EquippedOffhand = equippedOffhand,
-        Backpack = backpack ?? [],
+        Id             = id,
+        Name           = name,
+        Class          = playerClass,
+        BaseStats      = stats,
+        CurrentHp      = currentHp,
+        Level          = level,
+        KillCount      = killCount,
+        FloorsCleared  = floorsCleared,
+        Position       = position,
+        BackpackCapacity  = backpackCapacity,
+        EquippedWeapon    = equippedWeapon,
+        EquippedOffhand   = equippedOffhand,
+        BackpackItems     = backpackItems   ?? [],
+        BackpackWeapons   = backpackWeapons ?? [],
     };
 }
