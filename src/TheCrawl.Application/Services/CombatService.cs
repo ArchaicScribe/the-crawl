@@ -33,7 +33,7 @@ public class CombatService(IAnnouncerService announcer)
         if (!enemy.IsAlive)
         {
             player.RegisterKill();
-            var killMessage = await announcer.OnKillAsync(player.Name, enemy.Name, player.KillCount, ct);
+            var killMessage = await announcer.OnKillAsync(session.Id, player.Name, enemy.Name, player.KillCount, ct);
             session.LogEvent($"Killed {enemy.Name}. +{enemy.RatingsOnKill} RATINGS.");
             return new AttackResult(true, dealt, $"{enemy.Name} is down.", true, killMessage);
         }
@@ -45,7 +45,7 @@ public class CombatService(IAnnouncerService announcer)
         if (!player.IsAlive)
         {
             session.EndSession(GameStatus.Dead);
-            deathMessage = await announcer.OnDeathAsync(player.Name, player.FloorsCleared, player.KillCount, ct);
+            deathMessage = await announcer.OnDeathAsync(session.Id, player.Name, player.FloorsCleared, player.KillCount, ct);
         }
 
         return new AttackResult(true, dealt,
@@ -63,7 +63,7 @@ public class CombatService(IAnnouncerService announcer)
         var actual = player.TakeDamage(Math.Max(1, damage));
         if (actual > 0)
         {
-            var msg = await announcer.OnPlayerDamagedAsync(player.Name, actual, player.CurrentHp, ct);
+            var msg = await announcer.OnPlayerDamagedAsync(session.Id, player.Name, actual, player.CurrentHp, ct);
             session.LogEvent(msg);
         }
         return actual;

@@ -32,7 +32,7 @@ public class GameService(
         await sessionStore.SaveAsync(session, ct);
         await sessionRepository.SaveAsync(session, ct);
 
-        var message = await announcer.OnSessionStartAsync(command.PlayerName, command.PlayerClass.ToString(), ct);
+        var message = await announcer.OnSessionStartAsync(session.Id, command.PlayerName, command.PlayerClass.ToString(), ct);
         return new StartGameResult(session.Id, message);
     }
 
@@ -88,7 +88,7 @@ public class GameService(
             session.DescendToFloor(nextFloor);
             // FOV from spawn position on the new floor
             nextFloor.UpdateVisibility(fov.Calculate(player.Position, SightRadius, nextFloor));
-            announcerMessage = await announcer.OnFloorDescendAsync(player.Name, nextFloorNumber, ct);
+            announcerMessage = await announcer.OnFloorDescendAsync(session.Id, player.Name, nextFloorNumber, ct);
         }
 
         // Enemy turns run after every successful player move
@@ -251,7 +251,7 @@ public class GameService(
             case Domain.Entities.ItemType.Consumable:
                 player.Heal(item.EffectValue);
                 message = $"Used {item.Name}. Restored {item.EffectValue} HP. ({player.CurrentHp}/{player.MaxHp})";
-                announcerMsg = await announcer.OnItemPickupAsync(player.Name, item.Name, ct);
+                announcerMsg = await announcer.OnItemPickupAsync(session.Id, player.Name, item.Name, ct);
                 break;
             default:
                 message = $"{item.Name} can't be used directly.";

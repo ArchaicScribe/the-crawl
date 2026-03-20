@@ -126,12 +126,12 @@ public class EnemyTurnService(IPathfinder pathfinder, IAnnouncerService announce
         if (!player.IsAlive)
         {
             session.EndSession(GameStatus.Dead);
-            announcerMsg = await announcer.OnDeathAsync(player.Name, player.FloorsCleared, player.KillCount, ct);
+            announcerMsg = await announcer.OnDeathAsync(session.Id, player.Name, player.FloorsCleared, player.KillCount, ct);
             logMsg = $"{enemy.Name} kills {player.Name}. The broadcast has its moment.";
         }
         else
         {
-            announcerMsg = await announcer.OnPlayerDamagedAsync(player.Name, damage, player.CurrentHp, ct);
+            announcerMsg = await announcer.OnPlayerDamagedAsync(session.Id, player.Name, damage, player.CurrentHp, ct);
             logMsg = $"{enemy.Name} hits for {damage}. HP: {player.CurrentHp}/{player.MaxHp}.";
         }
 
