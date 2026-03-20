@@ -27,7 +27,7 @@ public class CombatService(IAnnouncerService announcer)
         if (dodgeRoll < effectiveDodge)
             return new AttackResult(false, 0, $"{enemy.Name} sidesteps your attack.", false);
 
-        var damage = player.BaseStats.Muscle + _rng.Next(-1, 3);
+        var damage = player.RollWeaponDamage(_rng) + _rng.Next(-1, 3);
         var dealt = enemy.TakeDamage(Math.Max(1, damage));
 
         if (!enemy.IsAlive)

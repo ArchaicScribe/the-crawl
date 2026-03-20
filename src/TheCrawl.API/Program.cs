@@ -23,6 +23,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
 builder.Services.AddScoped<ISessionStore, RedisSessionStore>();
 builder.Services.AddSingleton<IDungeonGenerator, DungeonGenerator>();
+builder.Services.AddSingleton<IWeaponGenerator, WeaponGenerator>();
 builder.Services.AddSingleton<IFovCalculator, FovCalculator>();
 builder.Services.AddSingleton<IPathfinder, AStarPathfinder>();
 builder.Services.AddSingleton<IAnnouncerService, AnnouncerService>();
