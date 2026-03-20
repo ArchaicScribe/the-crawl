@@ -156,19 +156,27 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
     private record EnemySnapshot(
         Guid Id, string Name, string FlavorTitle,
         int MaxHp, int CurrentHp, int Damage,
-        int DodgeChance, int RatingsOnKill, int X, int Y)
+        int DodgeChance, int RatingsOnKill, int X, int Y,
+        EnemyBehavior Behavior, int AwarenessMemory,
+        int? LastKnownX, int? LastKnownY)
     {
         public static EnemySnapshot From(Enemy e) => new(
             e.Id, e.Name, e.FlavorTitle,
             e.MaxHp, e.CurrentHp, e.Damage,
             e.DodgeChance, e.RatingsOnKill,
-            e.Position.X, e.Position.Y);
+            e.Position.X, e.Position.Y,
+            e.Behavior, e.AwarenessMemory,
+            e.LastKnownPlayerPos?.X, e.LastKnownPlayerPos?.Y);
 
         public Enemy ToDomain() => Enemy.Restore(
             Id, Name, FlavorTitle,
             MaxHp, CurrentHp, Damage,
             DodgeChance, RatingsOnKill,
-            new Position(X, Y));
+            new Position(X, Y),
+            Behavior, AwarenessMemory,
+            LastKnownX.HasValue && LastKnownY.HasValue
+                ? new Position(LastKnownX.Value, LastKnownY.Value)
+                : null);
     }
 
     private record ItemSnapshot(

@@ -24,9 +24,11 @@ builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
 builder.Services.AddScoped<ISessionStore, RedisSessionStore>();
 builder.Services.AddSingleton<IDungeonGenerator, DungeonGenerator>();
 builder.Services.AddSingleton<IFovCalculator, FovCalculator>();
+builder.Services.AddSingleton<IPathfinder, AStarPathfinder>();
 builder.Services.AddSingleton<IAnnouncerService, AnnouncerService>();
 builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<CombatService>();
+builder.Services.AddScoped<EnemyTurnService>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>

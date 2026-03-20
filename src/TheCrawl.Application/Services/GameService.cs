@@ -12,7 +12,8 @@ public class GameService(
     IGameSessionRepository sessionRepository,
     ISessionStore sessionStore,
     IAnnouncerService announcer,
-    IFovCalculator fov)
+    IFovCalculator fov,
+    EnemyTurnService enemyTurns)
 {
     // Sight radius in tiles. Could become a per-class stat or item modifier later.
     private const int SightRadius = 8;
@@ -46,10 +47,14 @@ public class GameService(
 
         var delta = command.Direction switch
         {
-            Direction.North => new Position(0, -1),
-            Direction.South => new Position(0, 1),
-            Direction.West  => new Position(-1, 0),
-            Direction.East  => new Position(1, 0),
+            Direction.North     => new Position(0, -1),
+            Direction.South     => new Position(0, 1),
+            Direction.West      => new Position(-1, 0),
+            Direction.East      => new Position(1, 0),
+            Direction.NorthEast => new Position(1, -1),
+            Direction.NorthWest => new Position(-1, -1),
+            Direction.SouthEast => new Position(1, 1),
+            Direction.SouthWest => new Position(-1, 1),
             _ => new Position(0, 0)
         };
 
@@ -86,8 +91,16 @@ public class GameService(
             announcerMessage = await announcer.OnFloorDescendAsync(player.Name, nextFloorNumber, ct);
         }
 
+        // Enemy turns run after every successful player move
+        var enemyResult = await enemyTurns.ProcessTurnsAsync(session, ct);
+        foreach (var ev in enemyResult.Events)
+            session.LogEvent(ev);
+
+        // Enemy announcer message takes priority over floor-descent message
+        var finalAnnouncer = enemyResult.AnnouncerMessage ?? announcerMessage;
+
         await sessionStore.SaveAsync(session, ct);
-        return new MoveResult(true, $"Moved to ({target.X},{target.Y}).", announcerMessage);
+        return new MoveResult(true, $"Moved to ({target.X},{target.Y}).", finalAnnouncer);
     }
 
     public async Task<GameSession?> GetSessionAsync(Guid sessionId, CancellationToken ct = default) =>
