@@ -5,7 +5,7 @@ using TheCrawl.Domain.ValueObjects;
 namespace TheCrawl.Infrastructure.Generators;
 
 /// <summary>
-/// A* pathfinder using Manhattan heuristic and cardinal-only movement.
+/// A* pathfinder using Chebyshev heuristic and 8-directional movement.
 /// Returns only the next step — callers re-invoke each turn.
 /// </summary>
 public class AStarPathfinder : IPathfinder
@@ -30,7 +30,7 @@ public class AStarPathfinder : IPathfinder
             if (current == goal)
                 return ReconstructFirstStep(cameFrom, start, goal);
 
-            foreach (var neighbor in current.CardinalNeighbors())
+            foreach (var neighbor in AllNeighbors(current))
             {
                 // Must be walkable. Goal tile may be occupied by the player — allow it.
                 if (!floor.IsWalkable(neighbor)) continue;
@@ -49,8 +49,20 @@ public class AStarPathfinder : IPathfinder
         return null; // No path found
     }
 
+    /// <summary>All 8 neighbours — cardinal + diagonal.</summary>
+    private static IEnumerable<Position> AllNeighbors(Position p)
+    {
+        for (var dx = -1; dx <= 1; dx++)
+        for (var dy = -1; dy <= 1; dy++)
+        {
+            if (dx == 0 && dy == 0) continue;
+            yield return new Position(p.X + dx, p.Y + dy);
+        }
+    }
+
+    /// <summary>Chebyshev distance — admissible heuristic for 8-directional movement.</summary>
     private static int Heuristic(Position a, Position b) =>
-        Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
+        Math.Max(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y));
 
     private static Position ReconstructFirstStep(Dictionary<Position, Position> cameFrom, Position start, Position goal)
     {

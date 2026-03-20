@@ -138,8 +138,9 @@ public class EnemyTurnService(IPathfinder pathfinder, IAnnouncerService announce
         return (damage, logMsg, announcerMsg);
     }
 
+    /// <summary>Chebyshev adjacency — true for all 8 surrounding tiles.</summary>
     private static bool IsAdjacent(Position a, Position b) =>
-        Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y) == 1;
+        Math.Max(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y)) == 1;
 }
 
 public record EnemyTurnResult(List<string> Events, string? AnnouncerMessage, bool PlayerDied);
