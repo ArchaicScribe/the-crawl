@@ -116,7 +116,34 @@ public class Player
 
     public bool CanDualWield => Class is PlayerClass.Exterminator or PlayerClass.Veteran;
 
-    public bool CanEquipHeavy => Class is PlayerClass.Exterminator or PlayerClass.Veteran;
+    /// <summary>
+    /// Returns null if the weapon can be equipped, or an error message if not.
+    /// Enforces weight class level gates:
+    ///   Veteran:      Medium+Medium at 5, any Heavy at 10
+    ///   Exterminator: any Heavy at 8
+    ///   Others:       no Heavy weapons at all
+    /// </summary>
+    public string? CanEquip(Weapon weapon, bool offhand = false)
+    {
+        if (offhand && !CanDualWield)
+            return "Your class cannot dual wield.";
+
+        if (weapon.Weight == WeaponWeight.Heavy)
+        {
+            if (Class == PlayerClass.Veteran && Level < 10)
+                return $"Veterans can equip Heavy weapons at level 10. You are level {Level}.";
+            if (Class == PlayerClass.Exterminator && Level < 8)
+                return $"Exterminators can equip Heavy weapons at level 8. You are level {Level}.";
+            if (Class is not (PlayerClass.Veteran or PlayerClass.Exterminator))
+                return "Only Veterans and Exterminators can wield Heavy weapons.";
+        }
+
+        if (offhand && weapon.Weight == WeaponWeight.Medium
+            && Class == PlayerClass.Veteran && Level < 5)
+            return $"Veterans can dual wield Medium weapons at level 5. You are level {Level}.";
+
+        return null;
+    }
 
     // -------------------------------------------------------------------------
     // Combat helpers

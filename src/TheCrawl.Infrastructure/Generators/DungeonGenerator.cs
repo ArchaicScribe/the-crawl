@@ -5,7 +5,7 @@ using TheCrawl.Domain.ValueObjects;
 
 namespace TheCrawl.Infrastructure.Generators;
 
-public class DungeonGenerator : IDungeonGenerator
+public class DungeonGenerator(IWeaponGenerator weaponGenerator) : IDungeonGenerator
 {
     private const int MapWidth = 60;
     private const int MapHeight = 40;
@@ -40,11 +40,12 @@ public class DungeonGenerator : IDungeonGenerator
         }
 
         var enemies = SpawnEnemies(rooms, floorNumber, zone);
-        var items = SpawnItems(rooms, floorNumber);
-        var stairs = rooms.Last().Center;
+        var items   = SpawnItems(rooms, floorNumber);
+        var weapons = SpawnWeapons(rooms, zone);
+        var stairs  = rooms.Last().Center;
         tiles[stairs.X, stairs.Y] = TileType.StairsDown;
 
-        return new Floor(floorNumber, zone, MapWidth, MapHeight, tiles, rooms, enemies, items, stairs);
+        return new Floor(floorNumber, zone, MapWidth, MapHeight, tiles, rooms, enemies, items, weapons, stairs);
     }
 
     private static TileType[,] InitWalls()
@@ -113,6 +114,23 @@ public class DungeonGenerator : IDungeonGenerator
             items.Add(new Item("Med Kit", "Restores 20 HP. Expired two years ago.", ItemType.Consumable, 20, pos));
         }
         return items;
+    }
+
+    private List<Weapon> SpawnWeapons(List<Room> rooms, ZoneType zone)
+    {
+        var weapons = new List<Weapon>();
+
+        // Skip room 0 (spawn), place one weapon in roughly every third room
+        foreach (var room in rooms.Skip(1).Where(_ => _rng.Next(3) == 0))
+        {
+            var pos    = RandomFloorPosition(room);
+            var rarity = weaponGenerator.RollRarity(zone, _rng);
+            var weapon = weaponGenerator.Generate(zone, rarity);
+            weapon.PlaceAt(pos);
+            weapons.Add(weapon);
+        }
+
+        return weapons;
     }
 
     private Position RandomFloorPosition(Room room) => new(

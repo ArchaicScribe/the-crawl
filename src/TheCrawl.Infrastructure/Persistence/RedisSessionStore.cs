@@ -106,21 +106,24 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
         WeaponRarity Rarity, WeaponWeight Weight, ZoneType OriginZone, int TierLevel,
         int DamageMin, int DamageMax, int MaxDurability, int CurrentDurability,
         bool IsIdentified, bool IsUnique, bool IsCursed,
-        string? StatModifierStat, int StatModifierValue)
+        string? StatModifierStat, int StatModifierValue,
+        int? PosX, int? PosY)
     {
         public static WeaponSnapshot From(Weapon w) => new(
             w.Id, w.BaseName, w.Prefix, w.Suffix, w.UnidentifiedName,
             w.Rarity, w.Weight, w.OriginZone, w.TierLevel,
             w.DamageMin, w.DamageMax, w.MaxDurability, w.CurrentDurability,
             w.IsIdentified, w.IsUnique, w.IsCursed,
-            w.StatModifierStat, w.StatModifierValue);
+            w.StatModifierStat, w.StatModifierValue,
+            w.Position?.X, w.Position?.Y);
 
         public Weapon ToDomain() => Weapon.Restore(
             Id, BaseName, Prefix, Suffix, UnidentifiedName,
             Rarity, Weight, OriginZone, TierLevel,
             DamageMin, DamageMax, MaxDurability, CurrentDurability,
             IsIdentified, IsUnique, IsCursed,
-            StatModifierStat, StatModifierValue);
+            StatModifierStat, StatModifierValue,
+            PosX.HasValue && PosY.HasValue ? new Position(PosX.Value, PosY.Value) : null);
     }
 
     private record FloorSnapshot(
@@ -130,6 +133,7 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
         List<RoomSnapshot> Rooms,
         List<EnemySnapshot> Enemies,
         List<ItemSnapshot> Items,
+        List<WeaponSnapshot> Weapons,
         int StairsX, int StairsY,
         List<int[]> VisibleTiles,
         List<int[]> ExploredTiles)
@@ -141,6 +145,7 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
             f.Rooms.Select(RoomSnapshot.From).ToList(),
             f.Enemies.Select(EnemySnapshot.From).ToList(),
             f.Items.Select(ItemSnapshot.From).ToList(),
+            f.Weapons.Select(WeaponSnapshot.From).ToList(),
             f.StairsPosition.X, f.StairsPosition.Y,
             f.VisibleTiles.Select(p  => new[] { p.X, p.Y }).ToList(),
             f.ExploredTiles.Select(p => new[] { p.X, p.Y }).ToList());
@@ -155,6 +160,7 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
                 Rooms.Select(r => r.ToDomain()).ToList(),
                 Enemies.Select(e => e.ToDomain()).ToList(),
                 Items.Select(i => i.ToDomain()).ToList(),
+                Weapons.Select(w => w.ToDomain()).ToList(),
                 new Position(StairsX, StairsY),
                 visible, explored);
         }

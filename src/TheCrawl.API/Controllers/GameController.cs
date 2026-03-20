@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TheCrawl.Application.Commands;
 using TheCrawl.Application.Services;
+using TheCrawl.Domain.Interfaces;
 
 namespace TheCrawl.API.Controllers;
 
@@ -21,6 +22,14 @@ public class GameController(GameService gameService) : ControllerBase
         var result = await gameService.MoveAsync(command, ct);
         if (!result.Success)
             return BadRequest(result);
+        return Ok(result);
+    }
+
+    [HttpPost("pickup")]
+    public async Task<IActionResult> Pickup([FromBody] PickupWeaponCommand command, CancellationToken ct)
+    {
+        var result = await gameService.PickupWeaponAsync(command, ct);
+        if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
 

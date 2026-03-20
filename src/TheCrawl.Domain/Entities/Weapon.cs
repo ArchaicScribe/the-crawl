@@ -7,6 +7,9 @@ public class Weapon
 {
     public Guid Id { get; private set; }
 
+    /// <summary>Floor position when the weapon is lying on the ground. Null when equipped or in backpack.</summary>
+    public Position? Position { get; private set; }
+
     // Identity
     public string BaseName { get; private set; }      // e.g. "Stapler"
     public string Prefix { get; private set; }        // e.g. "Recalled"
@@ -66,12 +69,16 @@ public class Weapon
 
     public void Cleanse() => IsCursed = false;
 
+    public void PlaceAt(Position position) => Position = position;
+    public void PickUp() => Position = null;
+
     public static Weapon Create(
         string baseName, string prefix, string suffix, string unidentifiedName,
         WeaponRarity rarity, WeaponWeight weight, ZoneType originZone, int tierLevel,
         int damageMin, int damageMax, int maxDurability,
         string? statModifierStat = null, int statModifierValue = 0,
-        bool isCursed = false, bool isUnique = false) => new()
+        bool isCursed = false, bool isUnique = false,
+        Position? position = null) => new()
     {
         Id = Guid.NewGuid(),
         BaseName = baseName,
@@ -90,7 +97,8 @@ public class Weapon
         StatModifierValue = statModifierValue,
         IsCursed = isCursed,
         IsUnique = isUnique,
-        IsIdentified = isUnique // uniques self-identify; procedural weapons do not
+        IsIdentified = isUnique, // uniques self-identify; procedural weapons do not
+        Position = position
     };
 
     public static Weapon Restore(
@@ -98,7 +106,8 @@ public class Weapon
         WeaponRarity rarity, WeaponWeight weight, ZoneType originZone, int tierLevel,
         int damageMin, int damageMax, int maxDurability, int currentDurability,
         bool isIdentified, bool isUnique, bool isCursed,
-        string? statModifierStat = null, int statModifierValue = 0) => new()
+        string? statModifierStat = null, int statModifierValue = 0,
+        Position? position = null) => new()
     {
         Id = id,
         BaseName = baseName,
@@ -117,6 +126,7 @@ public class Weapon
         IsUnique = isUnique,
         IsCursed = isCursed,
         StatModifierStat = statModifierStat,
-        StatModifierValue = statModifierValue
+        StatModifierValue = statModifierValue,
+        Position = position
     };
 }

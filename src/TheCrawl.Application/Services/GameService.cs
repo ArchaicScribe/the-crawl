@@ -103,6 +103,37 @@ public class GameService(
         return new MoveResult(true, $"Moved to ({target.X},{target.Y}).", finalAnnouncer);
     }
 
+    public async Task<PickupWeaponResult> PickupWeaponAsync(PickupWeaponCommand command, CancellationToken ct = default)
+    {
+        var session = await sessionStore.GetAsync(command.SessionId, ct);
+        if (session is null || !session.IsActive)
+            return new PickupWeaponResult(false, "Session not found or already ended.");
+
+        var floor  = session.CurrentFloor;
+        var weapon = floor.WeaponAt(session.Player.Position);
+        if (weapon is null)
+            return new PickupWeaponResult(false, "Nothing to pick up here.");
+
+        floor.RemoveWeapon(weapon);
+        weapon.PickUp();
+
+        // Auto-equip to main hand if empty; otherwise prompt player to equip manually
+        string message;
+        if (session.Player.EquippedWeapon is null)
+        {
+            session.Player.EquipWeapon(weapon);
+            message = $"Equipped {weapon.DisplayName}.";
+        }
+        else
+        {
+            message = $"Picked up {weapon.DisplayName}. Use /equip to swap it in.";
+        }
+
+        session.LogEvent(message);
+        await sessionStore.SaveAsync(session, ct);
+        return new PickupWeaponResult(true, message, weapon.DisplayName);
+    }
+
     public async Task<GameSession?> GetSessionAsync(Guid sessionId, CancellationToken ct = default) =>
         await sessionStore.GetAsync(sessionId, ct);
 }
