@@ -47,10 +47,14 @@ public class GameService(
 
         var delta = command.Direction switch
         {
-            Direction.North => new Position(0, -1),
-            Direction.South => new Position(0, 1),
-            Direction.West  => new Position(-1, 0),
-            Direction.East  => new Position(1, 0),
+            Direction.North     => new Position(0, -1),
+            Direction.South     => new Position(0, 1),
+            Direction.West      => new Position(-1, 0),
+            Direction.East      => new Position(1, 0),
+            Direction.NorthEast => new Position(1, -1),
+            Direction.NorthWest => new Position(-1, -1),
+            Direction.SouthEast => new Position(1, 1),
+            Direction.SouthWest => new Position(-1, 1),
             _ => new Position(0, 0)
         };
 
