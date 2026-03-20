@@ -76,20 +76,51 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
         Guid Id, string Name, PlayerClass Class,
         int Muscle, int Nerve, int Grit, int Wit, int Ratings,
         int CurrentHp, int Level, int KillCount, int FloorsCleared,
-        int X, int Y)
+        int X, int Y,
+        int BackpackCapacity,
+        WeaponSnapshot? EquippedWeapon,
+        WeaponSnapshot? EquippedOffhand)
     {
         public static PlayerSnapshot From(Player p) => new(
             p.Id, p.Name, p.Class,
             p.BaseStats.Muscle, p.BaseStats.Nerve, p.BaseStats.Grit,
             p.BaseStats.Wit, p.BaseStats.Ratings,
             p.CurrentHp, p.Level, p.KillCount, p.FloorsCleared,
-            p.Position.X, p.Position.Y);
+            p.Position.X, p.Position.Y,
+            p.BackpackCapacity,
+            p.EquippedWeapon  is not null ? WeaponSnapshot.From(p.EquippedWeapon)  : null,
+            p.EquippedOffhand is not null ? WeaponSnapshot.From(p.EquippedOffhand) : null);
 
         public Player ToDomain() => Player.Restore(
             Id, Name, Class,
             new Stats(Muscle, Nerve, Grit, Wit, Ratings),
             CurrentHp, Level, KillCount, FloorsCleared,
-            new Position(X, Y));
+            new Position(X, Y),
+            BackpackCapacity,
+            EquippedWeapon?.ToDomain(),
+            EquippedOffhand?.ToDomain());
+    }
+
+    private record WeaponSnapshot(
+        Guid Id, string BaseName, string Prefix, string Suffix, string UnidentifiedName,
+        WeaponRarity Rarity, WeaponWeight Weight, ZoneType OriginZone, int TierLevel,
+        int DamageMin, int DamageMax, int MaxDurability, int CurrentDurability,
+        bool IsIdentified, bool IsUnique, bool IsCursed,
+        string? StatModifierStat, int StatModifierValue)
+    {
+        public static WeaponSnapshot From(Weapon w) => new(
+            w.Id, w.BaseName, w.Prefix, w.Suffix, w.UnidentifiedName,
+            w.Rarity, w.Weight, w.OriginZone, w.TierLevel,
+            w.DamageMin, w.DamageMax, w.MaxDurability, w.CurrentDurability,
+            w.IsIdentified, w.IsUnique, w.IsCursed,
+            w.StatModifierStat, w.StatModifierValue);
+
+        public Weapon ToDomain() => Weapon.Restore(
+            Id, BaseName, Prefix, Suffix, UnidentifiedName,
+            Rarity, Weight, OriginZone, TierLevel,
+            DamageMin, DamageMax, MaxDurability, CurrentDurability,
+            IsIdentified, IsUnique, IsCursed,
+            StatModifierStat, StatModifierValue);
     }
 
     private record FloorSnapshot(
