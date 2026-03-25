@@ -75,6 +75,8 @@ public class GameController(GameService gameService) : ControllerBase
                 player.CurrentHp,
                 player.MaxHp,
                 player.Level,
+                player.Xp,
+                player.XpToNextLevel,
                 player.KillCount,
                 player.FloorsCleared,
                 Stats    = player.BaseStats,

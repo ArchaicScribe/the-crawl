@@ -9,4 +9,5 @@ public interface IAnnouncerService
     Task<string> OnFloorDescendAsync(Guid sessionId, string playerName, int newFloor, CancellationToken ct = default);
     Task<string> OnItemPickupAsync(Guid sessionId, string playerName, string itemName, CancellationToken ct = default);
     Task<string> OnObjectionSucceedsAsync(Guid sessionId, string enemyName, CancellationToken ct = default);
+    Task<string> OnLevelUpAsync(Guid sessionId, string playerName, int newLevel, CancellationToken ct = default);
 }

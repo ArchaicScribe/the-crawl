@@ -88,7 +88,13 @@ public class GameService(
             session.DescendToFloor(nextFloor);
             // FOV from spawn position on the new floor
             nextFloor.UpdateVisibility(fov.Calculate(player.Position, SightRadius, nextFloor));
-            announcerMessage = await announcer.OnFloorDescendAsync(session.Id, player.Name, nextFloorNumber, ct);
+            var floorXpBonus = 25 * nextFloorNumber;
+            var leveledOnDescend = player.AwardXp(floorXpBonus);
+            session.LogEvent($"Descended to floor {nextFloorNumber}. +{floorXpBonus} XP.");
+            if (leveledOnDescend) session.LogEvent($"Level up! Now level {player.Level}.");
+            announcerMessage = leveledOnDescend
+                ? await announcer.OnLevelUpAsync(session.Id, player.Name, player.Level, ct)
+                : await announcer.OnFloorDescendAsync(session.Id, player.Name, nextFloorNumber, ct);
         }
 
         // Enemy turns run after every successful player move

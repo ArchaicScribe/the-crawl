@@ -59,5 +59,12 @@ public class AnnouncerService : IAnnouncerService
             $"The facility's terms of service do not actually permit {enemyName} to engage at this time. Objection upheld. Remarkable.",
         ]));
 
+    public Task<string> OnLevelUpAsync(Guid sessionId, string playerName, int newLevel, CancellationToken ct = default) =>
+        Task.FromResult(Pick([
+            $"{playerName} has reached level {newLevel}. The facility has noted this development with moderate concern.",
+            $"LEVEL {newLevel}. {playerName} continues to improve. Sponsors are adjusting their risk assessments accordingly.",
+            $"{playerName} levels up to {newLevel}. Statistically, this makes them more expensive to kill. The audience approves.",
+        ]));
+
     private static string Pick(string[] options) => options[_rng.Next(options.Length)];
 }

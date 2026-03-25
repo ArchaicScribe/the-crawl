@@ -88,7 +88,7 @@ public class EnemyTurnService(IPathfinder pathfinder, IAnnouncerService announce
             {
                 // Wander: pick a random walkable neighbour that isn't already occupied
                 occupiedByEnemies.Remove(enemy.Position);
-                var options = enemy.Position.CardinalNeighbors()
+                var options = enemy.Position.AllNeighbors()
                     .Where(p => floor.IsWalkable(p) && !occupiedByEnemies.Contains(p) && p != player.Position)
                     .ToList();
 

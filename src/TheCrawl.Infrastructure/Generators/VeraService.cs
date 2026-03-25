@@ -100,6 +100,10 @@ public sealed class VeraService(
         CommentAsync(sessionId,
             $"The Lawyer filed a successful Objection. {enemyName} is legally compelled to stand down.", ct);
 
+    public Task<string> OnLevelUpAsync(Guid sessionId, string playerName, int newLevel, CancellationToken ct = default) =>
+        CommentAsync(sessionId,
+            $"{playerName} reached level {newLevel}.", ct);
+
     // -------------------------------------------------------------------------
     // Core Claude API call
     // -------------------------------------------------------------------------

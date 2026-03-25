@@ -14,6 +14,8 @@ public class Player
     public int CurrentHp { get; private set; }
     public int MaxHp => BaseStats.MaxHp;
     public int Level { get; private set; }
+    public int Xp { get; private set; }
+    public int XpToNextLevel => ClassDefinitions.XpToNextLevel(Level);
     public int KillCount { get; private set; }
     public int FloorsCleared { get; private set; }
     public Position Position { get; private set; }
@@ -88,6 +90,19 @@ public class Player
 
     public void RegisterKill() => KillCount++;
     public void ClearFloor()   => FloorsCleared++;
+
+    /// <summary>
+    /// Awards XP and triggers a level-up if the threshold is crossed.
+    /// Returns true if the player leveled up.
+    /// </summary>
+    public bool AwardXp(int amount)
+    {
+        Xp += amount;
+        if (Xp < XpToNextLevel) return false;
+        Xp -= XpToNextLevel;
+        LevelUp(ClassDefinitions.GetLevelUpBonus(Class));
+        return true;
+    }
 
     public void LevelUp(Stats bonus)
     {
@@ -237,7 +252,7 @@ public class Player
 
     public static Player Restore(
         Guid id, string name, PlayerClass playerClass, Stats stats,
-        int currentHp, int level, int killCount, int floorsCleared, Position position,
+        int currentHp, int level, int xp, int killCount, int floorsCleared, Position position,
         int backpackCapacity = BaseBackpackCapacity,
         Weapon? equippedWeapon  = null,
         Weapon? equippedOffhand = null,
@@ -250,6 +265,7 @@ public class Player
         BaseStats      = stats,
         CurrentHp      = currentHp,
         Level          = level,
+        Xp             = xp,
         KillCount      = killCount,
         FloorsCleared  = floorsCleared,
         Position       = position,
