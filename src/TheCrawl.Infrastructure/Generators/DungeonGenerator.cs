@@ -5,7 +5,7 @@ using TheCrawl.Domain.ValueObjects;
 
 namespace TheCrawl.Infrastructure.Generators;
 
-public class DungeonGenerator : IDungeonGenerator
+public class DungeonGenerator(IWeaponGenerator weaponGenerator) : IDungeonGenerator
 {
     private const int MapWidth = 60;
     private const int MapHeight = 40;
@@ -40,11 +40,12 @@ public class DungeonGenerator : IDungeonGenerator
         }
 
         var enemies = SpawnEnemies(rooms, floorNumber, zone);
-        var items = SpawnItems(rooms, floorNumber);
-        var stairs = rooms.Last().Center;
+        var items   = SpawnItems(rooms, floorNumber);
+        var weapons = SpawnWeapons(rooms, zone);
+        var stairs  = rooms.Last().Center;
         tiles[stairs.X, stairs.Y] = TileType.StairsDown;
 
-        return new Floor(floorNumber, zone, MapWidth, MapHeight, tiles, rooms, enemies, items, stairs);
+        return new Floor(floorNumber, zone, MapWidth, MapHeight, tiles, rooms, enemies, items, weapons, stairs);
     }
 
     private static TileType[,] InitWalls()
@@ -97,6 +98,7 @@ public class DungeonGenerator : IDungeonGenerator
                     template.Damage + floorNumber / 3,
                     template.DodgeChance,
                     template.RatingsOnKill,
+                    template.XpOnKill + floorNumber,
                     pos));
             }
         }
@@ -115,34 +117,52 @@ public class DungeonGenerator : IDungeonGenerator
         return items;
     }
 
+    private List<Weapon> SpawnWeapons(List<Room> rooms, ZoneType zone)
+    {
+        var weapons = new List<Weapon>();
+
+        // Skip room 0 (spawn), place one weapon in roughly every third room
+        foreach (var room in rooms.Skip(1).Where(_ => _rng.Next(3) == 0))
+        {
+            var pos    = RandomFloorPosition(room);
+            var rarity = weaponGenerator.RollRarity(zone, _rng);
+            var weapon = weaponGenerator.Generate(zone, rarity);
+            weapon.PlaceAt(pos);
+            weapons.Add(weapon);
+        }
+
+        return weapons;
+    }
+
     private Position RandomFloorPosition(Room room) => new(
         _rng.Next(room.X + 1, room.X + room.Width - 1),
         _rng.Next(room.Y + 1, room.Y + room.Height - 1));
 
     private static List<EnemyTemplate> GetEnemyPool(ZoneType zone, int floorNumber) => zone switch
     {
+        // XpOnKill: SurfaceFringe 5–8, CorporateSector 10–15, IndustrialSector 18–25, TheDeep 30–40
         ZoneType.SurfaceFringe => [
-            new("Sewer Rat", "Critically Enlarged", 8, 2, 15, 2),
-            new("Feral Cat", "Previously Domesticated", 12, 3, 25, 3),
-            new("Security Guard", "Very Underpaid", 15, 4, 10, 4),
+            new("Sewer Rat",      "Critically Enlarged",    8,  2,  15, 2,  5),
+            new("Feral Cat",      "Previously Domesticated",12, 3,  25, 3,  7),
+            new("Security Guard", "Very Underpaid",         15, 4,  10, 4,  8),
         ],
         ZoneType.CorporateSector => [
-            new("Security Drone", "Model HR-7", 20, 5, 20, 5),
-            new("Middle Manager", "Fully Autonomous", 18, 4, 5, 6),
-            new("Automated HR System", "Recruiting Version", 25, 6, 0, 8),
+            new("Security Drone",       "Model HR-7",          20, 5, 20, 5,  10),
+            new("Middle Manager",       "Fully Autonomous",    18, 4,  5, 6,  12),
+            new("Automated HR System",  "Recruiting Version",  25, 6,  0, 8,  15),
         ],
         ZoneType.IndustrialSector => [
-            new("Maintenance Bot", "Overdue for Servicing", 30, 7, 10, 7),
-            new("Arc Welder Drone", "Safety Mode Disabled", 35, 9, 15, 9),
-            new("Coolant Leak", "Sentient", 20, 5, 0, 5),
+            new("Maintenance Bot",   "Overdue for Servicing", 30, 7, 10, 7,  18),
+            new("Arc Welder Drone",  "Safety Mode Disabled",  35, 9, 15, 9,  22),
+            new("Coolant Leak",      "Sentient",              20, 5,  0, 5,  25),
         ],
         ZoneType.TheDeep => [
-            new("Dungeon Architect", "Do Not Engage", 50, 12, 20, 15),
-            new("Xal'Veth Scout", "Rating This 5 Stars", 40, 10, 30, 12),
-            new("Broadcast Moderator", "Content Policy Enforcer", 45, 11, 15, 14),
+            new("Dungeon Architect",   "Do Not Engage",             50, 12, 20, 15, 30),
+            new("Xal'Veth Scout",      "Rating This 5 Stars",       40, 10, 30, 12, 35),
+            new("Broadcast Moderator", "Content Policy Enforcer",   45, 11, 15, 14, 40),
         ],
-        _ => [new("Error", "undefined behavior", 10, 3, 0, 1)]
+        _ => [new("Error", "undefined behavior", 10, 3, 0, 1, 1)]
     };
 
-    private record EnemyTemplate(string Name, string FlavorTitle, int MaxHp, int Damage, int DodgeChance, int RatingsOnKill);
+    private record EnemyTemplate(string Name, string FlavorTitle, int MaxHp, int Damage, int DodgeChance, int RatingsOnKill, int XpOnKill);
 }

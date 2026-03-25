@@ -27,14 +27,18 @@ public class CombatService(IAnnouncerService announcer)
         if (dodgeRoll < effectiveDodge)
             return new AttackResult(false, 0, $"{enemy.Name} sidesteps your attack.", false);
 
-        var damage = player.BaseStats.Muscle + _rng.Next(-1, 3);
+        var damage = player.RollWeaponDamage(_rng) + _rng.Next(-1, 3);
         var dealt = enemy.TakeDamage(Math.Max(1, damage));
 
         if (!enemy.IsAlive)
         {
             player.RegisterKill();
-            var killMessage = await announcer.OnKillAsync(player.Name, enemy.Name, player.KillCount, ct);
-            session.LogEvent($"Killed {enemy.Name}. +{enemy.RatingsOnKill} RATINGS.");
+            var leveled = player.AwardXp(enemy.XpOnKill);
+            var killMessage = leveled
+                ? await announcer.OnLevelUpAsync(session.Id, player.Name, player.Level, ct)
+                : await announcer.OnKillAsync(session.Id, player.Name, enemy.Name, player.KillCount, ct);
+            session.LogEvent($"Killed {enemy.Name}. +{enemy.RatingsOnKill} RATINGS. +{enemy.XpOnKill} XP.");
+            if (leveled) session.LogEvent($"Level up! Now level {player.Level}.");
             return new AttackResult(true, dealt, $"{enemy.Name} is down.", true, killMessage);
         }
 
@@ -45,7 +49,7 @@ public class CombatService(IAnnouncerService announcer)
         if (!player.IsAlive)
         {
             session.EndSession(GameStatus.Dead);
-            deathMessage = await announcer.OnDeathAsync(player.Name, player.FloorsCleared, player.KillCount, ct);
+            deathMessage = await announcer.OnDeathAsync(session.Id, player.Name, player.FloorsCleared, player.KillCount, ct);
         }
 
         return new AttackResult(true, dealt,
@@ -63,7 +67,7 @@ public class CombatService(IAnnouncerService announcer)
         var actual = player.TakeDamage(Math.Max(1, damage));
         if (actual > 0)
         {
-            var msg = await announcer.OnPlayerDamagedAsync(player.Name, actual, player.CurrentHp, ct);
+            var msg = await announcer.OnPlayerDamagedAsync(session.Id, player.Name, actual, player.CurrentHp, ct);
             session.LogEvent(msg);
         }
         return actual;

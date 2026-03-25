@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.SignalR;
 using TheCrawl.Application.Commands;
 using TheCrawl.Application.Services;
+using TheCrawl.Domain.Interfaces;
 
 namespace TheCrawl.API.Hubs;
 
-public class GameHub(GameService gameService, CombatService combatService) : Hub
+public class GameHub(GameService gameService, CombatService combatService, ISessionStore sessionStore) : Hub
 {
     public async Task JoinSession(string sessionId)
     {
@@ -32,6 +33,8 @@ public class GameHub(GameService gameService, CombatService combatService) : Hub
         if (session is null) return;
 
         var result = await combatService.ResolvePlayerAttackAsync(session);
+        await sessionStore.SaveAsync(session);
+
         await Clients.Group(sessionId).SendAsync("CombatResult", result);
 
         if (result.AnnouncerMessage is not null)
