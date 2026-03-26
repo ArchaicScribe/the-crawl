@@ -30,7 +30,7 @@ public class AStarPathfinder : IPathfinder
             if (current == goal)
                 return ReconstructFirstStep(cameFrom, start, goal);
 
-            foreach (var neighbor in AllNeighbors(current))
+            foreach (var neighbor in current.AllNeighbors())
             {
                 // Must be walkable. Goal tile may be occupied by the player — allow it.
                 if (!floor.IsWalkable(neighbor)) continue;
@@ -47,17 +47,6 @@ public class AStarPathfinder : IPathfinder
         }
 
         return null; // No path found
-    }
-
-    /// <summary>All 8 neighbours — cardinal + diagonal.</summary>
-    private static IEnumerable<Position> AllNeighbors(Position p)
-    {
-        for (var dx = -1; dx <= 1; dx++)
-        for (var dy = -1; dy <= 1; dy++)
-        {
-            if (dx == 0 && dy == 0) continue;
-            yield return new Position(p.X + dx, p.Y + dy);
-        }
     }
 
     /// <summary>Chebyshev distance — admissible heuristic for 8-directional movement.</summary>
