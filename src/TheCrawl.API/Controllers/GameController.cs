@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using TheCrawl.Application.Commands;
 using TheCrawl.Application.Services;
+using TheCrawl.Application.Interfaces;
 
 namespace TheCrawl.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class GameController(GameService gameService) : ControllerBase
+public class GameController(GameService gameService, AbilityService abilityService) : ControllerBase
 {
     [HttpPost("start")]
     public async Task<IActionResult> Start([FromBody] StartGameCommand command, CancellationToken ct)
@@ -55,6 +56,14 @@ public class GameController(GameService gameService) : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("use-ability")]
+    public async Task<IActionResult> UseAbility([FromBody] UseAbilityCommand command, CancellationToken ct)
+    {
+        var result = await abilityService.UseAbilityAsync(command, ct);
+        if (!result.Success) return BadRequest(result);
+        return Ok(result);
+    }
+
     [HttpGet("session/{sessionId:guid}")]
     public async Task<IActionResult> GetSession(Guid sessionId, CancellationToken ct)
     {
@@ -81,6 +90,8 @@ public class GameController(GameService gameService) : ControllerBase
                 player.FloorsCleared,
                 player.TotalRatings,
                 player.BroadcastScore,
+                player.AbilityCooldown,
+                player.CanUseAbility,
                 Stats    = player.BaseStats,
                 Position = player.Position,
                 Equipment = new

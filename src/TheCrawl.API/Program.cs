@@ -37,6 +37,7 @@ builder.Services.AddSingleton<IAnnouncerService, VeraService>();
 builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<CombatService>();
 builder.Services.AddScoped<EnemyTurnService>();
+builder.Services.AddScoped<AbilityService>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>

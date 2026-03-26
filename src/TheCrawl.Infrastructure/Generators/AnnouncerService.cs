@@ -66,5 +66,18 @@ public class AnnouncerService : IAnnouncerService
             $"{playerName} levels up to {newLevel}. Statistically, this makes them more expensive to kill. The audience approves.",
         ]));
 
+    public Task<string> OnAbilityUsedAsync(Guid sessionId, string playerName, string abilityName, string? targetName, CancellationToken ct = default) =>
+        Task.FromResult(Pick(targetName is not null
+            ? [
+                $"{playerName} deploys {abilityName} against {targetName}. Unorthodox. Effective. Good television.",
+                $"{abilityName} activated. {targetName} did not see that coming. Neither did our legal team.",
+                $"Class ability: {abilityName}. {playerName} reminds {targetName} — and this broadcast — why they were hired.",
+            ]
+            : [
+                $"{playerName} uses {abilityName}. The facility logs this under 'contestant resourcefulness.'",
+                $"{abilityName} deployed. {playerName} is either very clever or very desperate. Ratings suggest both.",
+                $"Ability used: {abilityName}. The audience appreciates a professional at work.",
+            ]));
+
     private static string Pick(string[] options) => options[_rng.Next(options.Length)];
 }

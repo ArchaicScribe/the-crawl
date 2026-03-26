@@ -19,6 +19,8 @@ public class Player
     public int KillCount { get; private set; }
     public int FloorsCleared { get; private set; }
     public int TotalRatings { get; private set; }
+    public int AbilityCooldown { get; private set; }
+    public bool CanUseAbility => AbilityCooldown <= 0;
     public Position Position { get; private set; }
     public bool IsAlive => CurrentHp > 0;
 
@@ -92,6 +94,8 @@ public class Player
     public void RegisterKill() => KillCount++;
     public void ClearFloor()   => FloorsCleared++;
     public void AddRatings(int amount) => TotalRatings += amount;
+    public void StartAbilityCooldown(int turns) => AbilityCooldown = turns;
+    public void TickAbilityCooldown() { if (AbilityCooldown > 0) AbilityCooldown--; }
 
     /// <summary>
     /// Awards XP. Loops until XP is below the next threshold to handle multi-level gains.
@@ -260,24 +264,25 @@ public class Player
     public static Player Restore(
         Guid id, string name, PlayerClass playerClass, Stats stats,
         int currentHp, int level, int xp, int killCount, int floorsCleared,
-        int totalRatings, Position position,
+        int totalRatings, int abilityCooldown, Position position,
         int backpackCapacity = BaseBackpackCapacity,
         Weapon? equippedWeapon  = null,
         Weapon? equippedOffhand = null,
         List<Item>?   backpackItems   = null,
         List<Weapon>? backpackWeapons = null) => new()
     {
-        Id             = id,
-        Name           = name,
-        Class          = playerClass,
-        BaseStats      = stats,
-        CurrentHp      = currentHp,
-        Level          = level,
-        Xp             = xp,
-        KillCount      = killCount,
-        FloorsCleared  = floorsCleared,
-        TotalRatings   = totalRatings,
-        Position       = position,
+        Id               = id,
+        Name             = name,
+        Class            = playerClass,
+        BaseStats        = stats,
+        CurrentHp        = currentHp,
+        Level            = level,
+        Xp               = xp,
+        KillCount        = killCount,
+        FloorsCleared    = floorsCleared,
+        TotalRatings     = totalRatings,
+        AbilityCooldown  = abilityCooldown,
+        Position         = position,
         BackpackCapacity  = backpackCapacity,
         EquippedWeapon    = equippedWeapon,
         EquippedOffhand   = equippedOffhand,

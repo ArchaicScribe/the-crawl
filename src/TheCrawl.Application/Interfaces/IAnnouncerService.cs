@@ -10,4 +10,5 @@ public interface IAnnouncerService
     Task<string> OnItemPickupAsync(Guid sessionId, string playerName, string itemName, CancellationToken ct = default);
     Task<string> OnObjectionSucceedsAsync(Guid sessionId, string enemyName, CancellationToken ct = default);
     Task<string> OnLevelUpAsync(Guid sessionId, string playerName, int newLevel, CancellationToken ct = default);
+    Task<string> OnAbilityUsedAsync(Guid sessionId, string playerName, string abilityName, string? targetName, CancellationToken ct = default);
 }

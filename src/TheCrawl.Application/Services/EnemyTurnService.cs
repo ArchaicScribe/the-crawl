@@ -34,6 +34,9 @@ public class EnemyTurnService(IPathfinder pathfinder, IAnnouncerService announce
         var events = new List<string>();
         string? announcerMessage = null;
 
+        // Ability cooldown ticks once per turn cycle
+        player.TickAbilityCooldown();
+
         // Snapshot occupied positions to avoid enemies stacking
         var occupiedByEnemies = floor.Enemies
             .Where(e => e.IsAlive)

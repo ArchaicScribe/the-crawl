@@ -104,6 +104,12 @@ public sealed class VeraService(
         CommentAsync(sessionId,
             $"{playerName} reached level {newLevel}.", ct);
 
+    public Task<string> OnAbilityUsedAsync(Guid sessionId, string playerName, string abilityName, string? targetName, CancellationToken ct = default) =>
+        CommentAsync(sessionId,
+            targetName is not null
+                ? $"{playerName} used class ability '{abilityName}' against {targetName}."
+                : $"{playerName} used class ability '{abilityName}'.", ct);
+
     // -------------------------------------------------------------------------
     // Core Claude API call
     // -------------------------------------------------------------------------

@@ -59,6 +59,14 @@ public class Enemy
         LastKnownPlayerPos = playerPos;
     }
 
+    /// <summary>Immediately forces this enemy to Wander regardless of current state.</summary>
+    public void ForceWander()
+    {
+        Behavior = EnemyBehavior.Wander;
+        AwarenessMemory = 0;
+        LastKnownPlayerPos = null;
+    }
+
     /// <summary>Called each turn the enemy is out of sight. Returns true when awareness expires.</summary>
     public bool DecrementAwareness()
     {
