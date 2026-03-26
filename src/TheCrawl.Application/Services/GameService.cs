@@ -173,17 +173,39 @@ public class GameService(
         if (weapon is null)
             return new EquipResult(false, "Weapon not found in backpack.");
 
-        var restriction = player.CanEquip(weapon, command.Offhand);
-        if (restriction is not null)
-            return new EquipResult(false, restriction);
-
         player.RemoveFromBackpack(command.WeaponId);
 
-        Weapon? displaced = command.Offhand
-            ? player.EquipOffhand(weapon)
-            : player.EquipWeapon(weapon);
+        Weapon? displaced;
+        string slot;
 
-        // Displaced weapon goes back into backpack if there's room, otherwise dropped
+        if (command.JewelrySlot is { } jewelrySlot)
+        {
+            var jewelryRestriction = player.CanEquipJewelry(jewelrySlot);
+            if (jewelryRestriction is not null)
+            {
+                player.AddToBackpack(weapon); // put it back
+                return new EquipResult(false, jewelryRestriction);
+            }
+
+            displaced = player.EquipToJewelrySlot(weapon, jewelrySlot);
+            slot = jewelrySlot.ToString();
+        }
+        else
+        {
+            var restriction = player.CanEquip(weapon, command.Offhand);
+            if (restriction is not null)
+            {
+                player.AddToBackpack(weapon); // put it back
+                return new EquipResult(false, restriction);
+            }
+
+            displaced = command.Offhand
+                ? player.EquipOffhand(weapon)
+                : player.EquipWeapon(weapon);
+            slot = command.Offhand ? "offhand" : "main hand";
+        }
+
+        // Displaced item goes back into backpack if there's room, otherwise dropped
         if (displaced is not null)
         {
             if (!player.AddToBackpack(displaced))
@@ -194,7 +216,6 @@ public class GameService(
             }
         }
 
-        var slot = command.Offhand ? "offhand" : "main hand";
         var message = $"Equipped {weapon.DisplayName} to {slot}.";
         session.LogEvent(message);
         await sessionStore.SaveAsync(session, ct);

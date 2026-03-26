@@ -197,6 +197,58 @@ public class Player
     public void UnequipOffhand() => EquippedOffhand = null;
 
     // -------------------------------------------------------------------------
+    // Jewelry equip
+    // -------------------------------------------------------------------------
+
+    /// <summary>Returns null if the slot is available, or a reason string if not.</summary>
+    public string? CanEquipJewelry(JewelrySlot slot)
+    {
+        var influencerOnly = slot is JewelrySlot.Ring3 or JewelrySlot.Earring
+                                  or JewelrySlot.Anklet or JewelrySlot.Wristband;
+
+        if (influencerOnly && !HasBonusJewelrySlots)
+            return $"{slot} is an Influencer-exclusive slot.";
+
+        if (slot == JewelrySlot.Ring2 && RingSlotCount < 2)
+            return "You don't have a second ring slot.";
+
+        return null;
+    }
+
+    /// <summary>
+    /// Equips a weapon/accessory item to the given jewelry slot.
+    /// Returns the previously equipped item so the caller can handle it.
+    /// </summary>
+    public Weapon? EquipToJewelrySlot(Weapon weapon, JewelrySlot slot)
+    {
+        weapon.Identify();
+        Weapon? displaced = slot switch
+        {
+            JewelrySlot.Ring1     => SlotRing1,
+            JewelrySlot.Ring2     => SlotRing2,
+            JewelrySlot.Ring3     => SlotRing3,
+            JewelrySlot.Accessory => SlotAccessory,
+            JewelrySlot.Earring   => SlotEarring,
+            JewelrySlot.Anklet    => SlotAnklet,
+            JewelrySlot.Wristband => SlotWristband,
+            _ => null
+        };
+
+        switch (slot)
+        {
+            case JewelrySlot.Ring1:     SlotRing1     = weapon; break;
+            case JewelrySlot.Ring2:     SlotRing2     = weapon; break;
+            case JewelrySlot.Ring3:     SlotRing3     = weapon; break;
+            case JewelrySlot.Accessory: SlotAccessory = weapon; break;
+            case JewelrySlot.Earring:   SlotEarring   = weapon; break;
+            case JewelrySlot.Anklet:    SlotAnklet    = weapon; break;
+            case JewelrySlot.Wristband: SlotWristband = weapon; break;
+        }
+
+        return displaced;
+    }
+
+    // -------------------------------------------------------------------------
     // Backpack operations
     // -------------------------------------------------------------------------
 
