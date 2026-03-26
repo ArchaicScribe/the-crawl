@@ -75,7 +75,7 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
     private record PlayerSnapshot(
         Guid Id, string Name, PlayerClass Class,
         int Muscle, int Nerve, int Grit, int Wit, int Ratings,
-        int CurrentHp, int Level, int Xp, int KillCount, int FloorsCleared,
+        int CurrentHp, int Level, int Xp, int KillCount, int FloorsCleared, int TotalRatings,
         int X, int Y,
         int BackpackCapacity,
         WeaponSnapshot? EquippedWeapon,
@@ -87,7 +87,7 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
             p.Id, p.Name, p.Class,
             p.BaseStats.Muscle, p.BaseStats.Nerve, p.BaseStats.Grit,
             p.BaseStats.Wit, p.BaseStats.Ratings,
-            p.CurrentHp, p.Level, p.Xp, p.KillCount, p.FloorsCleared,
+            p.CurrentHp, p.Level, p.Xp, p.KillCount, p.FloorsCleared, p.TotalRatings,
             p.Position.X, p.Position.Y,
             p.BackpackCapacity,
             p.EquippedWeapon  is not null ? WeaponSnapshot.From(p.EquippedWeapon)  : null,
@@ -98,7 +98,7 @@ public class RedisSessionStore(IDistributedCache cache) : ISessionStore
         public Player ToDomain() => Player.Restore(
             Id, Name, Class,
             new Stats(Muscle, Nerve, Grit, Wit, Ratings),
-            CurrentHp, Level, Xp, KillCount, FloorsCleared,
+            CurrentHp, Level, Xp, KillCount, FloorsCleared, TotalRatings,
             new Position(X, Y),
             BackpackCapacity,
             EquippedWeapon?.ToDomain(),

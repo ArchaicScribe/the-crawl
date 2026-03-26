@@ -18,6 +18,7 @@ public class Player
     public int XpToNextLevel => ClassDefinitions.XpToNextLevel(Level);
     public int KillCount { get; private set; }
     public int FloorsCleared { get; private set; }
+    public int TotalRatings { get; private set; }
     public Position Position { get; private set; }
     public bool IsAlive => CurrentHp > 0;
 
@@ -90,25 +91,31 @@ public class Player
 
     public void RegisterKill() => KillCount++;
     public void ClearFloor()   => FloorsCleared++;
+    public void AddRatings(int amount) => TotalRatings += amount;
 
     /// <summary>
-    /// Awards XP and triggers a level-up if the threshold is crossed.
-    /// Returns true if the player leveled up.
+    /// Awards XP. Loops until XP is below the next threshold to handle multi-level gains.
+    /// Returns the number of levels gained (0 if none).
     /// </summary>
-    public bool AwardXp(int amount)
+    public int AwardXp(int amount)
     {
         Xp += amount;
-        if (Xp < XpToNextLevel) return false;
-        Xp -= XpToNextLevel;
-        LevelUp(ClassDefinitions.GetLevelUpBonus(Class));
-        return true;
+        int levelsGained = 0;
+        while (Xp >= XpToNextLevel)
+        {
+            Xp -= XpToNextLevel;
+            LevelUp(ClassDefinitions.GetLevelUpBonus(Class));
+            levelsGained++;
+        }
+        return levelsGained;
     }
 
     public void LevelUp(Stats bonus)
     {
         Level++;
         BaseStats = BaseStats.Add(bonus).Clamp();
-        CurrentHp = Math.Min(CurrentHp, MaxHp);
+        // Partial heal on level-up — reward without fully restoring HP
+        CurrentHp = Math.Min(MaxHp, CurrentHp + MaxHp / 4);
     }
 
     public void ExpandBackpack(int slots) => BackpackCapacity += slots;
@@ -244,7 +251,7 @@ public class Player
     }
 
     public long BroadcastScore =>
-        (long)BaseStats.Ratings * FloorsCleared * Math.Max(1, KillCount);
+        (long)(BaseStats.Ratings + TotalRatings) * Math.Max(1, FloorsCleared) * Math.Max(1, KillCount);
 
     // -------------------------------------------------------------------------
     // Restore
@@ -252,7 +259,8 @@ public class Player
 
     public static Player Restore(
         Guid id, string name, PlayerClass playerClass, Stats stats,
-        int currentHp, int level, int xp, int killCount, int floorsCleared, Position position,
+        int currentHp, int level, int xp, int killCount, int floorsCleared,
+        int totalRatings, Position position,
         int backpackCapacity = BaseBackpackCapacity,
         Weapon? equippedWeapon  = null,
         Weapon? equippedOffhand = null,
@@ -268,6 +276,7 @@ public class Player
         Xp             = xp,
         KillCount      = killCount,
         FloorsCleared  = floorsCleared,
+        TotalRatings   = totalRatings,
         Position       = position,
         BackpackCapacity  = backpackCapacity,
         EquippedWeapon    = equippedWeapon,

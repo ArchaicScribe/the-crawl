@@ -33,12 +33,13 @@ public class CombatService(IAnnouncerService announcer)
         if (!enemy.IsAlive)
         {
             player.RegisterKill();
-            var leveled = player.AwardXp(enemy.XpOnKill);
-            var killMessage = leveled
+            player.AddRatings(enemy.RatingsOnKill);
+            var levelsGained = player.AwardXp(enemy.XpOnKill);
+            session.LogEvent($"Killed {enemy.Name}. +{enemy.RatingsOnKill} RATINGS. +{enemy.XpOnKill} XP.");
+            if (levelsGained > 0) session.LogEvent($"Level up! Now level {player.Level}.");
+            var killMessage = levelsGained > 0
                 ? await announcer.OnLevelUpAsync(session.Id, player.Name, player.Level, ct)
                 : await announcer.OnKillAsync(session.Id, player.Name, enemy.Name, player.KillCount, ct);
-            session.LogEvent($"Killed {enemy.Name}. +{enemy.RatingsOnKill} RATINGS. +{enemy.XpOnKill} XP.");
-            if (leveled) session.LogEvent($"Level up! Now level {player.Level}.");
             return new AttackResult(true, dealt, $"{enemy.Name} is down.", true, killMessage);
         }
 

@@ -79,6 +79,8 @@ public class GameController(GameService gameService) : ControllerBase
                 player.XpToNextLevel,
                 player.KillCount,
                 player.FloorsCleared,
+                player.TotalRatings,
+                player.BroadcastScore,
                 Stats    = player.BaseStats,
                 Position = player.Position,
                 Equipment = new

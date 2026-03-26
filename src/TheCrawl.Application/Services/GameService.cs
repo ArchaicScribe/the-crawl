@@ -89,10 +89,10 @@ public class GameService(
             // FOV from spawn position on the new floor
             nextFloor.UpdateVisibility(fov.Calculate(player.Position, SightRadius, nextFloor));
             var floorXpBonus = 25 * nextFloorNumber;
-            var leveledOnDescend = player.AwardXp(floorXpBonus);
+            var levelsOnDescend = player.AwardXp(floorXpBonus);
             session.LogEvent($"Descended to floor {nextFloorNumber}. +{floorXpBonus} XP.");
-            if (leveledOnDescend) session.LogEvent($"Level up! Now level {player.Level}.");
-            announcerMessage = leveledOnDescend
+            if (levelsOnDescend > 0) session.LogEvent($"Level up! Now level {player.Level}.");
+            announcerMessage = levelsOnDescend > 0
                 ? await announcer.OnLevelUpAsync(session.Id, player.Name, player.Level, ct)
                 : await announcer.OnFloorDescendAsync(session.Id, player.Name, nextFloorNumber, ct);
         }
