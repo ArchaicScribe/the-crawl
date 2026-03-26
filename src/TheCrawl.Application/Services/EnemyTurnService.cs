@@ -34,6 +34,9 @@ public class EnemyTurnService(IPathfinder pathfinder, IAnnouncerService announce
         var events = new List<string>();
         string? announcerMessage = null;
 
+        // Ability cooldown ticks once per turn cycle
+        player.TickAbilityCooldown();
+
         // Snapshot occupied positions to avoid enemies stacking
         var occupiedByEnemies = floor.Enemies
             .Where(e => e.IsAlive)
@@ -88,7 +91,7 @@ public class EnemyTurnService(IPathfinder pathfinder, IAnnouncerService announce
             {
                 // Wander: pick a random walkable neighbour that isn't already occupied
                 occupiedByEnemies.Remove(enemy.Position);
-                var options = enemy.Position.CardinalNeighbors()
+                var options = enemy.Position.AllNeighbors()
                     .Where(p => floor.IsWalkable(p) && !occupiedByEnemies.Contains(p) && p != player.Position)
                     .ToList();
 
@@ -126,12 +129,12 @@ public class EnemyTurnService(IPathfinder pathfinder, IAnnouncerService announce
         if (!player.IsAlive)
         {
             session.EndSession(GameStatus.Dead);
-            announcerMsg = await announcer.OnDeathAsync(player.Name, player.FloorsCleared, player.KillCount, ct);
+            announcerMsg = await announcer.OnDeathAsync(session.Id, player.Name, player.FloorsCleared, player.KillCount, ct);
             logMsg = $"{enemy.Name} kills {player.Name}. The broadcast has its moment.";
         }
         else
         {
-            announcerMsg = await announcer.OnPlayerDamagedAsync(player.Name, damage, player.CurrentHp, ct);
+            announcerMsg = await announcer.OnPlayerDamagedAsync(session.Id, player.Name, damage, player.CurrentHp, ct);
             logMsg = $"{enemy.Name} hits for {damage}. HP: {player.CurrentHp}/{player.MaxHp}.";
         }
 

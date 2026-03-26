@@ -23,12 +23,21 @@ builder.Services.AddStackExchangeRedisCache(options =>
 builder.Services.AddScoped<IGameSessionRepository, GameSessionRepository>();
 builder.Services.AddScoped<ISessionStore, RedisSessionStore>();
 builder.Services.AddSingleton<IDungeonGenerator, DungeonGenerator>();
+builder.Services.AddSingleton<IWeaponGenerator, WeaponGenerator>();
 builder.Services.AddSingleton<IFovCalculator, FovCalculator>();
 builder.Services.AddSingleton<IPathfinder, AStarPathfinder>();
-builder.Services.AddSingleton<IAnnouncerService, AnnouncerService>();
+builder.Services.AddHttpClient("Anthropic", client =>
+{
+    client.BaseAddress = new Uri("https://api.anthropic.com");
+    client.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
+});
+
+// VERA is used when Anthropic:ApiKey is configured; falls back to static lines if not.
+builder.Services.AddSingleton<IAnnouncerService, VeraService>();
 builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<CombatService>();
 builder.Services.AddScoped<EnemyTurnService>();
+builder.Services.AddScoped<AbilityService>();
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>

@@ -14,6 +14,7 @@ public class Floor
     public List<Room> Rooms { get; private set; } = [];
     public List<Enemy> Enemies { get; private set; } = [];
     public List<Item> Items { get; private set; } = [];
+    public List<Weapon> Weapons { get; private set; } = [];
     public Position StairsPosition { get; private set; }
     public bool IsCleared => !Enemies.Any(e => e.IsAlive);
 
@@ -26,7 +27,8 @@ public class Floor
     private Floor() { }
 
     public Floor(int floorNumber, ZoneType zone, int width, int height, TileType[,] tiles,
-        List<Room> rooms, List<Enemy> enemies, List<Item> items, Position stairsPosition)
+        List<Room> rooms, List<Enemy> enemies, List<Item> items, List<Weapon> weapons,
+        Position stairsPosition)
     {
         Id = Guid.NewGuid();
         FloorNumber = floorNumber;
@@ -37,6 +39,7 @@ public class Floor
         Rooms = rooms;
         Enemies = enemies;
         Items = items;
+        Weapons = weapons;
         StairsPosition = stairsPosition;
     }
 
@@ -52,6 +55,15 @@ public class Floor
 
     public Item? ItemAt(Position pos) =>
         Items.FirstOrDefault(i => i.Position == pos);
+
+    public Weapon? WeaponAt(Position pos) =>
+        Weapons.FirstOrDefault(w => w.Position == pos);
+
+    public void RemoveWeapon(Weapon weapon) => Weapons.Remove(weapon);
+    public void AddWeapon(Weapon weapon)    => Weapons.Add(weapon);
+
+    public void RemoveItem(Item item) => Items.Remove(item);
+    public void AddItem(Item item)    => Items.Add(item);
 
     /// <summary>
     /// Replaces the current visible set and merges it into explored.
@@ -70,7 +82,7 @@ public class Floor
     public static Floor Restore(
         Guid id, int floorNumber, ZoneType zone, int width, int height,
         TileType[,] tiles, List<Room> rooms, List<Enemy> enemies,
-        List<Item> items, Position stairsPosition,
+        List<Item> items, List<Weapon> weapons, Position stairsPosition,
         HashSet<Position>? visibleTiles = null,
         HashSet<Position>? exploredTiles = null) => new()
     {
@@ -83,6 +95,7 @@ public class Floor
         Rooms = rooms,
         Enemies = enemies,
         Items = items,
+        Weapons = weapons,
         StairsPosition = stairsPosition,
         VisibleTiles  = visibleTiles  ?? [],
         ExploredTiles = exploredTiles ?? []

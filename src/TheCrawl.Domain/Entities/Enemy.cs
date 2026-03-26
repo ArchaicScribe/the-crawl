@@ -13,6 +13,7 @@ public class Enemy
     public int Damage { get; private set; }
     public int DodgeChance { get; private set; } // 0–100
     public int RatingsOnKill { get; private set; }
+    public int XpOnKill { get; private set; }
     public Position Position { get; private set; }
     public bool IsAlive => CurrentHp > 0;
 
@@ -27,7 +28,7 @@ public class Enemy
 
     private Enemy() { }
 
-    public Enemy(string name, string flavorTitle, int maxHp, int damage, int dodgeChance, int ratingsOnKill, Position position)
+    public Enemy(string name, string flavorTitle, int maxHp, int damage, int dodgeChance, int ratingsOnKill, int xpOnKill, Position position)
     {
         Id = Guid.NewGuid();
         Name = name;
@@ -37,6 +38,7 @@ public class Enemy
         Damage = damage;
         DodgeChance = dodgeChance;
         RatingsOnKill = ratingsOnKill;
+        XpOnKill = xpOnKill;
         Position = position;
     }
 
@@ -57,6 +59,14 @@ public class Enemy
         LastKnownPlayerPos = playerPos;
     }
 
+    /// <summary>Immediately forces this enemy to Wander regardless of current state.</summary>
+    public void ForceWander()
+    {
+        Behavior = EnemyBehavior.Wander;
+        AwarenessMemory = 0;
+        LastKnownPlayerPos = null;
+    }
+
     /// <summary>Called each turn the enemy is out of sight. Returns true when awareness expires.</summary>
     public bool DecrementAwareness()
     {
@@ -74,7 +84,7 @@ public class Enemy
     public static Enemy Restore(
         Guid id, string name, string flavorTitle,
         int maxHp, int currentHp, int damage,
-        int dodgeChance, int ratingsOnKill, Position position,
+        int dodgeChance, int ratingsOnKill, int xpOnKill, Position position,
         EnemyBehavior behavior = EnemyBehavior.Wander,
         int awarenessMemory = 0,
         Position? lastKnownPlayerPos = null) => new()
@@ -87,6 +97,7 @@ public class Enemy
         Damage = damage,
         DodgeChance = dodgeChance,
         RatingsOnKill = ratingsOnKill,
+        XpOnKill = xpOnKill,
         Position = position,
         Behavior = behavior,
         AwarenessMemory = awarenessMemory,
